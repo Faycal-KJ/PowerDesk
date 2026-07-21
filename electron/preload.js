@@ -1,0 +1,78 @@
+const { contextBridge, ipcRenderer } = require('electron')
+
+function onChannel(channel, callback) {
+  const handler = (_event, ...args) => callback(...args)
+  ipcRenderer.on(channel, handler)
+  return () => ipcRenderer.removeListener(channel, handler)
+}
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  searchBuildIndex: (roots) => ipcRenderer.invoke('search-build-index', roots),
+  searchQuery: (q) => ipcRenderer.invoke('search-query', q),
+  searchStatus: () => ipcRenderer.invoke('search-status'),
+  onIndexProgress: (callback) => onChannel('index-progress', callback),
+  loadWorkspace: () => ipcRenderer.invoke('load-workspace'),
+  saveWorkspace: (tabs) => ipcRenderer.invoke('save-workspace', tabs),
+  onSaveWorkspaceRequest: (callback) => onChannel('save-workspace-request', callback),
+  readDir: (dirPath) => ipcRenderer.invoke('read-dir', dirPath),
+  refreshDir: (dirPath) => ipcRenderer.invoke('refresh-dir', dirPath),
+  openPath: (filePath) => ipcRenderer.invoke('open-path', filePath),
+  readImageThumbnail: (filePath) => ipcRenderer.invoke('read-image-thumbnail', filePath),
+  readImageThumbnailsBatch: (filePaths) => ipcRenderer.invoke('read-image-thumbnails-batch', filePaths),
+  readImagePreview: (filePath) => ipcRenderer.invoke('read-image-preview', filePath),
+  readFileText: (filePath) => ipcRenderer.invoke('read-file-text', filePath),
+  getFileStat: (filePath) => ipcRenderer.invoke('get-file-stat', filePath),
+  setClipboard: (items, operation) => ipcRenderer.invoke('set-clipboard', items, operation),
+  getClipboard: () => ipcRenderer.invoke('get-clipboard'),
+  fileCopy: (src, dest) => ipcRenderer.invoke('file-copy', src, dest),
+  fileDelete: (path) => ipcRenderer.invoke('file-delete', path),
+  trashFile: (filePath) => ipcRenderer.invoke('trash-file', filePath),
+  restoreFromTrash: (trashPath, originalPath) => ipcRenderer.invoke('restore-from-trash', trashPath, originalPath),
+  fileRename: (oldPath, newPath) => ipcRenderer.invoke('file-rename', oldPath, newPath),
+  createFolder: (dirPath, name) => ipcRenderer.invoke('create-folder', dirPath, name),
+  createFile: (dirPath, name) => ipcRenderer.invoke('create-file', dirPath, name),
+  writeFileText: (filePath, content) => ipcRenderer.invoke('write-file-text', filePath, content),
+  getFolderSize: (dirPath) => ipcRenderer.invoke('get-folder-size', dirPath),
+  getFolderSizesBatch: (dirPaths) => ipcRenderer.invoke('get-folder-sizes-batch', dirPaths),
+  getItemMeta: (dirPath, itemName) => ipcRenderer.invoke('get-item-meta', dirPath, itemName),
+  setItemMeta: (dirPath, itemName, updates) => ipcRenderer.invoke('set-item-meta', dirPath, itemName, updates),
+  getHomeDir: () => ipcRenderer.invoke('get-home-dir'),
+  getDocumentsDir: () => ipcRenderer.invoke('get-documents-dir'),
+  getDesktopDir: () => ipcRenderer.invoke('get-desktop-dir'),
+  getDownloadsDir: () => ipcRenderer.invoke('get-downloads-dir'),
+  getPicturesDir: () => ipcRenderer.invoke('get-pictures-dir'),
+  getMusicDir: () => ipcRenderer.invoke('get-music-dir'),
+  getVideosDir: () => ipcRenderer.invoke('get-videos-dir'),
+  getDrivesWindows: () => ipcRenderer.invoke('get-drives-windows'),
+  getInitialDirs: () => ipcRenderer.invoke('get-initial-dirs'),
+  getRecentFiles: () => ipcRenderer.invoke('get-recent-files'),
+  trackRecent: (filePath) => ipcRenderer.invoke('track-recent', filePath),
+  clearRecentFiles: () => ipcRenderer.invoke('clear-recent-files'),
+  compressFiles: (filePaths, outputPath) => ipcRenderer.invoke('compress-files', filePaths, outputPath),
+  checkFilesExist: (paths) => ipcRenderer.invoke('check-files-exist', paths),
+  terminalExec: (cwd, command) => ipcRenderer.invoke('terminal-exec', cwd, command),
+  setWindowOpacity: (opacity) => ipcRenderer.invoke('set-window-opacity', opacity),
+  setWindowBg: (hex) => ipcRenderer.invoke('set-window-bg', hex),
+  transferStart: (opts) => ipcRenderer.invoke('transfer-start', opts),
+  transferPause: (id) => ipcRenderer.invoke('transfer-pause', id),
+  transferResume: (id) => ipcRenderer.invoke('transfer-resume', id),
+  transferCancel: (id) => ipcRenderer.invoke('transfer-cancel', id),
+  transferRetry: (id) => ipcRenderer.invoke('transfer-retry', id),
+  onTransferProgress: (callback) => onChannel('transfer-progress', callback),
+  analyzeFolder: (dirPath) => ipcRenderer.invoke('analyze-folder', dirPath),
+  fileInspect: (filePath) => ipcRenderer.invoke('file-inspect', filePath),
+  readClipboardText: () => ipcRenderer.invoke('read-clipboard-text'),
+  getPluginsDir: () => ipcRenderer.invoke('get-plugins-dir'),
+  getPluginGuidePath: () => ipcRenderer.invoke('get-plugin-guide-path'),
+
+  // Window controls
+  windowMinimize: () => ipcRenderer.send('window-minimize'),
+  windowMaximize: () => ipcRenderer.send('window-maximize'),
+  windowClose: () => ipcRenderer.send('window-close'),
+  windowIsMaximized: () => ipcRenderer.invoke('window-is-maximized'),
+  onWindowMaximizeChange: (callback) => onChannel('window-maximize-change', callback),
+
+  // Multi Window Sync
+  syncBroadcast: (channel, data) => ipcRenderer.send('sync-broadcast', channel, data),
+  onSyncMessage: (callback) => onChannel('sync-message', callback),
+})

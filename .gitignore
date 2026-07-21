@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+out/
+release/
+installer/
+bin/
+*.exe
+
+# Electron build artifacts
+electron/bin/
+electron/*.exe
+
+# Vite
+.vite/
+
+# Logs
+*.log
+*.log.*
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment / secrets
+.env
+.env.*
+.env.local
+
+# Cache
+.cache/
+*.cache
+
+# Temp files
+*.tmp
+*.temp
+
+# Package manager
+.pnp.*
+.yarn/
+
+# Testing
+coverage/
+
+# Misc
+*.pem
+*.key
