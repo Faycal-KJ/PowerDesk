@@ -85,7 +85,7 @@ PowerDesk uses a custom Go binary indexer that scans your entire filesystem in p
 | User Profile (~110K files) | **3.0s** | 21.8s | **7.2x faster** |
 | Full C: Drive (~424K files) | **13.9s** | 81.4s | **5.9x faster** |
 
-> Tested on: Windows 10, Intel Core i5, 16GB RAM, 256GB SSD
+> Tested on: Windows 10, Intel Core i7, 8GB RAM, 256GB SSD
 >
 > The indexer runs in the background and builds a searchable index. Queries against the index are near-instant regardless of filesystem size.
 
