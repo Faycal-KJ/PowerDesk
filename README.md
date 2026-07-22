@@ -1,5 +1,8 @@
 # PowerDesk
+<p align="center">
+<img src="assets/Banner.png" alt="PowerDesk Banner" width="700">
 
+<p>
 > The operating system you wish Windows came with.
 
 Not just a file explorer. A workspace. An automation hub. A desktop replacement.
