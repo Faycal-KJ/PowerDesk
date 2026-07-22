@@ -1,11 +1,6 @@
 const path = require('path')
 const fs = require('fs')
-
-let _sharp
-function getSharp() {
-  if (!_sharp) _sharp = require('sharp')
-  return _sharp
-}
+const sharp = require('sharp')
 
 const thumbnailCache = new Map()
 const THUMB_SIZE = 200
@@ -31,7 +26,7 @@ async function generateThumbnail(filePath) {
   }
 
   try {
-    const resized = await getSharp()(filePath)
+    const resized = await sharp(filePath)
       .rotate()
       .resize(THUMB_SIZE, THUMB_SIZE, { fit: 'inside', withoutEnlargement: true })
       .jpeg({ quality: 75 })
@@ -47,8 +42,7 @@ async function generateThumbnail(filePath) {
     thumbnailCache.set(key, dataUrl)
 
     return dataUrl
-  } catch (e) {
-    console.error('[PowerDesk] generateThumbnail:', e.message)
+  } catch {
     return null
   }
 }
@@ -75,7 +69,7 @@ async function generateImagePreview(filePath) {
   const key = `${filePath}@${PREVIEW_SIZE}`
   if (thumbnailCache.has(key)) return thumbnailCache.get(key)
   try {
-    const resized = await getSharp()(filePath)
+    const resized = await sharp(filePath)
       .rotate()
       .resize(PREVIEW_SIZE, PREVIEW_SIZE, { fit: 'inside', withoutEnlargement: true })
       .jpeg({ quality: 85 })
@@ -87,7 +81,7 @@ async function generateImagePreview(filePath) {
     }
     thumbnailCache.set(key, dataUrl)
     return dataUrl
-  } catch (e) { console.error('[PowerDesk] generateImagePreview:', e.message); return null }
+  } catch { return null }
 }
 
 function parseExif(exifBuf) {
@@ -135,8 +129,7 @@ function parseExif(exifBuf) {
     if (softMatch) result.software = softMatch[0].trim().substring(0, 50)
 
     return result
-  } catch (e) {
-    console.error('[PowerDesk] parseExif:', e.message)
+  } catch {
     return null
   }
 }
@@ -176,8 +169,8 @@ function register(ipcMain, deps) {
     const imageExts = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.tiff', '.tif', '.bmp', '.svg', '.avif', '.heic', '.heif']
     if (imageExts.includes(ext)) {
       try {
-        const meta = await getSharp()(filePath).metadata()
-        const stats = await getSharp()(filePath).stats()
+        const meta = await sharp(filePath).metadata()
+        const stats = await sharp(filePath).stats()
         result.image = {
           format: meta.format,
           width: meta.width,
@@ -195,7 +188,7 @@ function register(ipcMain, deps) {
           isOpaque: stats.isOpaque,
           entropy: stats.entropy,
         }
-      } catch (e) { console.error('[PowerDesk] file-inspect image:', e.message) }
+      } catch {}
     }
 
     return result

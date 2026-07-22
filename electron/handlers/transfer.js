@@ -15,7 +15,7 @@ function getAllFiles(dirPath) {
         files.push(full)
       }
     }
-  } catch (e) { console.error('[PowerDesk] getAllFiles:', e.message) }
+  } catch {}
   return files
 }
 
@@ -28,10 +28,10 @@ function getDirSize(dirPath) {
       if (entry.isDirectory()) {
         total += getDirSize(full)
       } else {
-        try { total += fs.statSync(full).size } catch (e) { console.error('[PowerDesk] getDirSize file:', e.message) }
+        try { total += fs.statSync(full).size } catch {}
       }
     }
-  } catch (e) { console.error('[PowerDesk] getDirSize:', e.message) }
+  } catch {}
   return total
 }
 
@@ -58,17 +58,7 @@ function sendTransferProgress(id, getMainWindow) {
   })
 }
 
-function waitForResume(transfer) {
-  return new Promise((resolve) => {
-    const check = () => {
-      if (transfer.status !== 'paused') return resolve()
-      setTimeout(check, 500)
-    }
-    check()
-  })
-}
-
-async function copyFileSync(src, dest, fileSize, transfer) {
+function copyFileSync(src, dest, fileSize, transfer) {
   const BLOCK = 64 * 1024
   const srcFd = fs.openSync(src, 'r')
   const destFd = fs.openSync(dest, 'w')
@@ -78,9 +68,11 @@ async function copyFileSync(src, dest, fileSize, transfer) {
   try {
     while (offset < fileSize) {
       if (transfer.status === 'cancelled') break
-      if (transfer.status === 'paused') {
-        await waitForResume(transfer)
-        if (transfer.status === 'cancelled') return
+      while (transfer.status === 'paused') {
+        const start = Date.now()
+        while (transfer.status === 'paused' && transfer.status !== 'cancelled') {
+          if (Date.now() - start > 100) break
+        }
       }
 
       const bytesRead = fs.readSync(srcFd, buf, 0, BLOCK, offset)
@@ -124,15 +116,14 @@ async function processTransfer(id, getMainWindow) {
       if (t.operation === 'move') {
         try {
           fs.renameSync(srcFile, destFile)
-        } catch (e) {
-          console.error('[PowerDesk] move fallback:', e.message)
+        } catch {
           const stat = fs.statSync(srcFile)
-          await copyFileSync(srcFile, destFile, stat.size, t)
-          try { fs.unlinkSync(srcFile) } catch (e) { console.error('[PowerDesk] unlink:', e.message) }
+          copyFileSync(srcFile, destFile, stat.size, t)
+          try { fs.unlinkSync(srcFile) } catch {}
         }
       } else {
         const stat = fs.statSync(srcFile)
-        await copyFileSync(srcFile, destFile, stat.size, t)
+        copyFileSync(srcFile, destFile, stat.size, t)
       }
       t.completedFiles++
       t.speed = calcSpeed(t)
@@ -154,7 +145,7 @@ function register(ipcMain, deps) {
     const isDir = fs.existsSync(src) && fs.statSync(src).isDirectory()
     const files = isDir ? getAllFiles(src) : [src]
     const totalBytes = files.reduce((acc, f) => {
-      try { return acc + fs.statSync(f).size } catch (e) { console.error('[PowerDesk] totalBytes:', e.message); return acc }
+      try { return acc + fs.statSync(f).size } catch { return acc }
     }, 0)
 
     const transfer = {

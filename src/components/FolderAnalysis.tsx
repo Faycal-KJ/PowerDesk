@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react"
 import { useStore } from "../stores/useStore"
 import { getApi } from '../lib/api'
-import { formatSize } from '../lib/format'
 import { X, FolderSearch, FileText, Folder, Trash2, Clock, HardDrive, BarChart3, Copy, ArrowDown } from "lucide-react"
 
 interface FolderStats {
@@ -17,6 +16,13 @@ interface FolderStats {
   recentFiles: { name: string; path: string; dir: string; size: number; modified: string; ext: string }[]
   sizeBuckets: Record<string, number>
   avgFileSize: number
+}
+
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+  return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB'
 }
 
 const BUCKET_COLORS = ['#3498db', '#2ecc71', '#f39c12', '#e74c3c', '#9b59b6']

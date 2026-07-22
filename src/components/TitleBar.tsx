@@ -10,8 +10,7 @@ export default function TitleBar() {
   useEffect(() => {
     if (!api) return
     api.windowIsMaximized().then(setIsMaximized)
-    const off = api.onWindowMaximizeChange?.((v: boolean) => setIsMaximized(v))
-    return () => { off?.() }
+    api.onWindowMaximizeChange?.((v: boolean) => setIsMaximized(v))
   }, [])
 
   const dragStyle = {

@@ -106,12 +106,12 @@ export interface ElectronAPI {
   searchBuildIndex: (roots: string[]) => Promise<void>
   searchQuery: (q: string) => Promise<SearchResult[]>
   searchStatus: () => Promise<any>
-  onIndexProgress: (callback: (progress: any) => void) => () => void
+  onIndexProgress: (callback: (progress: any) => void) => void
 
   // Workspace
   loadWorkspace: () => Promise<any>
   saveWorkspace: (tabs: any[]) => Promise<void>
-  onSaveWorkspaceRequest: (callback: () => void) => () => void
+  onSaveWorkspaceRequest: (callback: () => void) => void
 
   // Directory reading
   readDir: (dirPath: string) => Promise<FileItem[]>
@@ -138,7 +138,6 @@ export interface ElectronAPI {
   fileRename: (oldPath: string, newPath: string) => Promise<void>
   createFolder: (dirPath: string, name: string) => Promise<void>
   createFile: (dirPath: string, name: string) => Promise<void>
-  writeFileText: (filePath: string, content: string) => Promise<{ success?: boolean; error?: string }>
 
   // Folder sizes
   getFolderSize: (dirPath: string) => Promise<number>
@@ -180,7 +179,7 @@ export interface ElectronAPI {
   windowMaximize: () => void
   windowClose: () => void
   windowIsMaximized: () => Promise<boolean>
-  onWindowMaximizeChange: (callback: (maximized: boolean) => void) => () => void
+  onWindowMaximizeChange: (callback: (maximized: boolean) => void) => void
 
   // Transfer center
   transferStart: (opts: { id: string; src: string; dest: string; operation: 'copy' | 'move' }) => Promise<void>
@@ -188,7 +187,7 @@ export interface ElectronAPI {
   transferResume: (id: string) => Promise<void>
   transferCancel: (id: string) => Promise<void>
   transferRetry: (id: string) => Promise<void>
-  onTransferProgress: (callback: (data: Transfer) => void) => () => void
+  onTransferProgress: (callback: (data: Transfer) => void) => void
 
   // Analysis
   analyzeFolder: (dirPath: string) => Promise<FolderAnalysis>
@@ -200,5 +199,5 @@ export interface ElectronAPI {
 
   // Multi Window Sync
   syncBroadcast: (channel: string, data: any) => void
-  onSyncMessage: (callback: (channel: string, data: any) => void) => () => void
+  onSyncMessage: (callback: (channel: string, data: any) => void) => void
 }

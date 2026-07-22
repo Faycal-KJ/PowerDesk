@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useStore } from '../stores/useStore'
 import { getApi } from '../lib/api'
-import { Search, Folder, File, X, Command, ArrowUpDown, Settings, Sidebar, Columns, LayoutGrid, List, Image, SlidersHorizontal, QrCode, Terminal, Palette, Save, Bookmark, Trash2, Star } from 'lucide-react'
+import { Search, Folder, File, X, Command, ArrowUpDown, Settings, Sidebar, Columns, LayoutGrid, List, Image, PanelRight, Monitor, Sun, Moon, SlidersHorizontal, QrCode, Terminal, Palette, Save, Bookmark, Trash2, Star } from 'lucide-react'
 import { parseSearchQuery } from '../lib/searchParser'
 import type { SearchFilters } from '../types'
 import { pluginManager } from '../plugins/pluginManager'
@@ -103,22 +103,6 @@ export default function SearchOverlay({ onClose, mode = 'search' }: { onClose: (
     if (isCommandMode) return
     const api = getApi()
     api?.searchStatus().then(setIndexStatus)
-
-    let offProgress: (() => void) | undefined
-    if (api?.onIndexProgress) {
-      offProgress = api.onIndexProgress((count: number) => {
-        setIndexStatus((prev) => prev ? { ...prev, total: count } : prev)
-      })
-    }
-
-    const poll = setInterval(() => {
-      api?.searchStatus().then(setIndexStatus)
-    }, 2000)
-
-    return () => {
-      offProgress?.()
-      clearInterval(poll)
-    }
   }, [])
 
   // Filter commands (built-in + plugin)

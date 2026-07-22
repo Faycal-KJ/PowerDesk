@@ -1,0 +1,533 @@
+PowerDesk Vision
+
+Tagline
+
+The operating system you wish Windows came with.
+
+Not just a file explorer.
+
+A workspace.
+
+An automation hub.
+
+An AI assistant.
+
+A launcher.
+
+A desktop replacement.
+
+Stage 1 — Foundation (MVP)
+
+This is what should be built first.
+
+1. Main Window
+
+Think VSCode meets Windows Explorer.
+
+---------------------------------------------------------
+ Menu
+
+ Search Everything...
+
+---------------------------------------------------------
+ Sidebar |              File Area
+         |
+         |
+         |
+---------------------------------------------------------
+ Status Bar
+Sidebar
+Favorites
+Drives
+Recent
+Downloads
+Desktop
+Documents
+Pictures
+Videos
+Music
+Trash
+
+Collapsible.
+
+Resizable.
+
+Top Bar
+
+Contains
+
+Back
+Forward
+Refresh
+Path Bar
+Search Bar
+File Area
+
+Supports
+
+Grid
+
+List
+
+Columns
+
+Gallery
+
+Icons
+
+Everything Windows has.
+
+Tabs
+
+Exactly like a browser.
+
+Unlimited.
+
+Drag between windows.
+
+Pin tabs.
+
+Duplicate tabs.
+
+Right Click Menu
+
+Custom menu.
+
+Cleaner than Windows.
+
+Example
+
+Open
+
+Open with...
+
+Copy
+
+Paste
+
+Rename
+
+Delete
+
+Compress
+
+Share
+
+Properties
+
+Run AI Action
+
+Automation
+
+Favorite
+
+Tag
+
+Color
+
+Stage 2 — Power User Features
+Dual Pane
+-----------------------------
+ Left | Right
+-----------------------------
+
+Like Total Commander.
+
+Perfect for moving files.
+
+Split Tabs
+
+One tab becomes two.
+
+----------------------------
+Tab1
+
+-----------
+ Left
+
+-----------
+ Right
+Workspace Saving
+
+Close PowerDesk.
+
+Open tomorrow.
+
+Everything returns.
+
+Tabs.
+
+Windows.
+
+Searches.
+
+History.
+
+Multi Rename
+
+Rename
+
+Photo (1)
+
+Photo (2)
+
+Photo (3)
+
+Automatically.
+
+Color Labels
+
+Folders can be
+
+🟢
+
+🔴
+
+🟡
+
+🔵
+
+Purple
+
+etc.
+
+Tags
+
+Instead of folders only.
+
+Example
+
+Vacation
+
+Work
+
+Important
+
+Invoices
+
+Taxes
+
+Gaming
+
+One file
+
+Multiple tags.
+
+Stage 3 — Search Engine
+
+Huge feature.
+
+Search should destroy Windows Search.
+
+Search by
+
+Name
+Extension
+Size
+Date
+Author
+Camera
+Width
+Height
+Video Length
+Color
+Tags
+OCR text
+Audio transcript
+
+Basically Everything + Spotlight combined.
+
+Stage 4 — Preview Panel
+
+Click a file.
+
+Preview instantly.
+
+Supports
+
+Images
+
+Video
+
+Audio
+
+PDF
+
+Word
+
+Excel
+
+Code
+
+Markdown
+
+Fonts
+
+3D Models
+
+ZIP contents
+
+Without opening them.
+
+Stage 5 — Built-in Tools
+
+Instead of installing 20 apps.
+
+Include
+
+Image viewer
+
+PDF viewer
+
+Markdown viewer
+
+Text editor
+
+Hex editor
+
+Terminal
+
+Archive manager
+
+Clipboard history
+
+QR generator
+
+Hash checker
+
+Checksum
+
+File compare
+
+Stage 6 — AI
+
+This is where PowerDesk becomes unique.
+
+AI Sidebar
+
+Always available.
+
+--------------------------------
+ Chat
+
+ Summarize folder
+
+ Explain file
+
+ Rename everything
+
+ Find duplicates
+
+ Compress
+
+ Clean Desktop
+
+ Organize Downloads
+
+
+AI understands
+
+Entire folders.
+
+Projects.
+
+Images.
+
+Videos.
+
+Documents.
+
+Example
+
+User:
+
+Find all invoices from last year.
+
+Done.
+
+User
+
+Organize my Downloads.
+
+Done.
+
+User
+
+Which folders waste the most space?
+
+Done.
+
+User
+
+Rename these 800 photos.
+
+Done.
+
+Stage 7 — Automation
+
+Visual automation builder.
+
+Like Node Editor.
+
+Folder Added
+
+↓
+
+Resize Image
+
+↓
+
+Compress
+
+↓
+
+Upload
+
+↓
+
+Delete Original
+
+No coding.
+
+Triggers
+
+Folder changed
+
+USB inserted
+
+Screenshot taken
+
+Time
+
+Startup
+
+Shutdown
+
+Battery
+
+Internet connected
+
+Etc.
+
+Stage 8 — Desktop Replacement
+
+Eventually...
+
+Desktop icons disappear.
+
+PowerDesk desktop replaces Windows.
+
+Widgets.
+
+Notes.
+
+Pinned folders.
+
+Recent work.
+
+Calendar.
+
+Weather.
+
+Clipboard.
+
+Downloads.
+
+Tasks.
+
+Stage 9 — AETHER Integration
+
+This is where everything connects.
+
+PowerDesk isn't the AI.
+
+AETHER is.
+
+Example
+
+User:
+
+"Where did I save that Blender project?"
+
+AETHER searches PowerDesk.
+
+User
+
+"Clean my Downloads."
+
+PowerDesk executes.
+
+User
+
+"Find that PDF John sent me."
+
+PowerDesk searches.
+
+Stage 10 — Plugin Store
+
+Community plugins.
+
+Themes.
+
+Widgets.
+
+Automation packs.
+
+Extensions.
+
+Exactly like VSCode.
+
+UI Style
+
+I'd avoid copying Windows 11 exactly. Instead, aim for something between VS Code, Arc Browser, and Notion:
+
+Minimal chrome (less wasted space)
+Soft rounded corners
+Dockable side panels
+Command Palette (Ctrl+P or Ctrl+Shift+P) for nearly every action
+Keyboard-first navigation for power users
+Light and dark themes from day one
+Smooth but subtle animations
+Suggested Development Roadmap
+Version 0.1
+File explorer
+Tabs
+Sidebar
+Search
+Copy/Move/Delete
+File operations
+Modern UI
+Version 0.2
+Dual pane
+Split view
+Favorites
+History
+Batch rename
+Color labels
+Version 0.3
+Fast indexed search
+File previews
+Built-in viewers
+Tags and metadata
+Version 0.4
+Automation engine
+Command palette
+Workspaces
+Clipboard manager
+Version 1.0
+AI integration
+Natural-language file operations
+Smart organization
+Plugin system
+Sync (optional Pro feature)
+One addition I'd make that could set PowerDesk apart
+
+Instead of thinking of it as a "better Explorer," think of it as the VS Code of file management.
+
+VS Code didn't win because it had more features than every editor on day one—it won because it had:
+
+A clean, extensible core.
+A great user experience.
+A powerful extension ecosystem.
+
+If PowerDesk follows the same philosophy—a polished core with plugins, automation, and eventually AETHER integration—you could grow it from a useful utility into the centerpiece of a broader productivity ecosystem rather than just another file manager.

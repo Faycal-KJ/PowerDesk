@@ -1,6 +1,27 @@
 import { useStore } from '../stores/useStore'
-import { formatSize, formatSpeed, formatEta } from '../lib/format'
 import { X, Pause, Play, XCircle, RotateCcw, ArrowDownToLine, ArrowUpFromLine, AlertTriangle, CheckCircle, Clock, HardDrive } from 'lucide-react'
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
+}
+
+function formatSpeed(bytesPerSec: number): string {
+  if (bytesPerSec === 0) return '—'
+  return formatBytes(bytesPerSec) + '/s'
+}
+
+function formatEta(transferred: number, total: number, speed: number): string {
+  if (speed <= 0 || total <= transferred) return '—'
+  const remaining = total - transferred
+  const seconds = Math.ceil(remaining / speed)
+  if (seconds < 60) return `${seconds}s`
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`
+  return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`
+}
 
 function statusColor(status: string) {
   switch (status) {
@@ -69,7 +90,7 @@ export default function TransferCenter() {
                     <div style={{ fontSize: 10, color: 'var(--text-muted)', display: 'flex', gap: 8 }}>
                       <span>{t.operation === 'copy' ? 'Copying' : 'Moving'}</span>
                       <span>{t.completedFiles}/{t.totalFiles} files</span>
-                      <span>{formatSize(t.transferredBytes)} / {formatSize(t.totalBytes)}</span>
+                      <span>{formatBytes(t.transferredBytes)} / {formatBytes(t.totalBytes)}</span>
                     </div>
                   </div>
                   {/* Action buttons */}

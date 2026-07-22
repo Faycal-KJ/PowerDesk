@@ -11,37 +11,35 @@ function loadWorkspace(app) {
     if (fs.existsSync(wp)) {
       return JSON.parse(fs.readFileSync(wp, 'utf-8'))
     }
-  } catch (e) { console.error('[PowerDesk] loadWorkspace:', e.message) }
+  } catch {}
   return null
 }
 
 function saveWorkspace(app, workspace) {
   try {
     fs.writeFileSync(workspacePath(app), JSON.stringify(workspace, null, 2), 'utf-8')
-  } catch (e) { console.error('[PowerDesk] saveWorkspace:', e.message) }
+  } catch {}
 }
 
 function loadRecentFiles(app) {
   try {
     const workspace = loadWorkspace(app)
-    const items = workspace?.recentFiles || []
-    return items.filter((f) => f.isDirectory)
-  } catch (e) { console.error('[PowerDesk] loadRecentFiles:', e.message) }
+    return workspace?.recentFiles || []
+  } catch {}
   return []
 }
 
 function addRecentFile(app, filePath) {
   try {
-    const isDir = fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()
-    if (!isDir) return
     const workspace = loadWorkspace(app) || {}
     if (!workspace.recentFiles) workspace.recentFiles = []
-    workspace.recentFiles = workspace.recentFiles.filter((f) => f.path !== filePath)
-    const name = path.basename(filePath)
-    workspace.recentFiles.unshift({ path: filePath, name, isDirectory: true, accessedAt: new Date().toISOString() })
-    workspace.recentFiles = workspace.recentFiles.slice(0, 100)
+    const folderPath = path.dirname(filePath)
+    const folderName = path.basename(folderPath) || folderPath
+    workspace.recentFiles = workspace.recentFiles.filter((f) => f.path !== folderPath)
+    workspace.recentFiles.unshift({ path: folderPath, name: folderName, accessedAt: new Date().toISOString() })
+    workspace.recentFiles = workspace.recentFiles.slice(0, 50)
     saveWorkspace(app, workspace)
-  } catch (e) { console.error('[PowerDesk] addRecentFile:', e.message) }
+  } catch {}
 }
 
 function register(ipcMain, deps) {
@@ -60,7 +58,7 @@ function register(ipcMain, deps) {
     for (let i = 65; i <= 90; i++) {
       const letter = String.fromCharCode(i)
       const drivePath = `${letter}:\\`
-      try { fs.accessSync(drivePath); drives.push(drivePath) } catch (e) { console.error('[PowerDesk] drive access:', drivePath, e.message) }
+      try { fs.accessSync(drivePath); drives.push(drivePath) } catch {}
     }
     return drives
   })
@@ -89,7 +87,7 @@ function register(ipcMain, deps) {
       const workspace = loadWorkspace(app) || {}
       workspace.recentFiles = []
       saveWorkspace(app, workspace)
-    } catch (e) { console.error('[PowerDesk] clear-recent-files:', e.message) }
+    } catch {}
     return true
   })
 
@@ -110,7 +108,7 @@ function register(ipcMain, deps) {
           } else {
             archive.file(fp, { name })
           }
-        } catch (e) { console.error('[PowerDesk] compress-files archive:', e.message) }
+        } catch {}
       }
       archive.finalize()
     })
@@ -118,7 +116,6 @@ function register(ipcMain, deps) {
 
   ipcMain.handle('terminal-exec', async (_event, cwd, command) => {
     const { exec } = require('child_process')
-    console.log(`[Terminal] Executing in ${cwd}: ${command}`)
     return new Promise((resolve) => {
       exec(command, { cwd, shell: 'powershell.exe', timeout: 30000, maxBuffer: 1024 * 1024 }, (err, stdout, stderr) => {
         resolve({ stdout: stdout || '', stderr: stderr || '', error: err?.message || null })
@@ -133,7 +130,7 @@ function register(ipcMain, deps) {
     function walk(dir, depth) {
       if (depth > 20) return
       let entries
-      try { entries = fs.readdirSync(dir, { withFileTypes: true }) } catch (e) { console.error('[PowerDesk] walk readdir:', e.message); return }
+      try { entries = fs.readdirSync(dir, { withFileTypes: true }) } catch { return }
       for (const entry of entries) {
         if (entry.name === '.powerdesk-trash') continue
         const fullPath = path.join(dir, entry.name)
@@ -152,7 +149,7 @@ function register(ipcMain, deps) {
               ext: path.extname(entry.name).toLowerCase(),
             })
           }
-        } catch (e) { console.error('[PowerDesk] walk stat:', e.message) }
+        } catch {}
       }
     }
     walk(dirPath, 0)

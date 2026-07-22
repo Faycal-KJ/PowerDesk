@@ -91,7 +91,7 @@ export function createPluginApi(pluginId: string): PluginApi {
       },
       writeFile: async (filePath, content) => {
         const api = getApi()
-        await api?.writeFileText(filePath, content)
+        await api?.createFile(filePath.substring(0, filePath.lastIndexOf('\\') || filePath.lastIndexOf('/')), content)
       },
       stat: async (filePath) => {
         const api = getApi()

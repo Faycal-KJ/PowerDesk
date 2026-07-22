@@ -2,16 +2,8 @@
   "name": "powerdesk",
   "private": true,
   "version": "0.1.0",
-  "description": "PowerDesk — The operating system you wish Windows came with.",
-  "author": "PowerDesk Contributors",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/PowerDeskApp/PowerDesk"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
+  "description": "PowerDesk — A modern file manager for Windows.",
+  "author": "Faycal",
   "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -22,6 +14,26 @@
     "electron:build:zip": "vite build && electron-builder --win dir && node scripts/zip-portable.js",
     "electron:build:nsis": "vite build && electron-builder --win nsis",
     "postinstall": "electron-builder install-app-deps"
+  },
+  "build": {
+    "appId": "com.powerdesk.app",
+    "productName": "PowerDesk",
+    "win": {
+      "target": "dir",
+      "icon": "assets/icon.ico"
+    },
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "!**/node_modules/**/{test,__tests__,tests,powered-test,example,examples}"
+    ],
+    "extraResources": [
+      { "from": "bin/pdx-index.exe", "to": "bin/pdx-index.exe" }
+    ],
+    "asar": true
   },
   "dependencies": {
     "archiver": "^8.0.0",
@@ -43,45 +55,5 @@
     "typescript": "^5.6.3",
     "vite": "^6.0.5",
     "wait-on": "^8.0.3"
-  },
-  "build": {
-    "appId": "com.powerdesk.app",
-    "productName": "PowerDesk",
-    "electronLanguages": ["en-US"],
-    "directories": {
-      "output": "release"
-    },
-    "files": [
-      "dist/**/*",
-      "electron/**/*",
-      "package.json"
-    ],
-    "extraResources": [
-      {
-        "from": "assets/Logo1.png",
-        "to": "assets/Logo1.png"
-      },
-      {
-        "from": "bin/pdx-index.exe",
-        "to": "bin/pdx-index.exe"
-      }
-    ],
-    "win": {
-      "icon": "assets/icon.ico",
-      "target": [
-        "dir"
-      ]
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "PowerDesk",
-      "installerIcon": "assets/icon.ico",
-      "uninstallerIcon": "assets/icon.ico",
-      "installerHeaderIcon": "assets/icon.ico",
-      "artifactName": "PowerDeskSetup.exe"
-    }
   }
 }

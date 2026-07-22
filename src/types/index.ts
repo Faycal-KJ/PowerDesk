@@ -142,6 +142,14 @@ export interface FavoriteCommand {
   targetPath?: string
 }
 
+export interface FolderBookmark {
+  id: string
+  folderPath: string
+  name: string
+  filePath: string
+  timestamp: number
+}
+
 export interface FavoriteItem {
   path: string
   type: 'folder' | 'file'

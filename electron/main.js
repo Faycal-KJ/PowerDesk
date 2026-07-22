@@ -2,6 +2,14 @@ const { app, BrowserWindow, ipcMain, shell, Menu, clipboard, globalShortcut, scr
 const path = require('path')
 const fs = require('fs')
 
+const fileOpsHandler = require('./handlers/fileOps')
+const thumbnailsHandler = require('./handlers/thumbnails')
+const searchHandler = require('./handlers/search')
+const transferHandler = require('./handlers/transfer')
+const clipboardHandler = require('./handlers/clipboard')
+const systemHandler = require('./handlers/system')
+const windowControlsHandler = require('./handlers/windowControls')
+
 let mainWindow
 
 function getMainWindow() {
@@ -11,32 +19,15 @@ function getMainWindow() {
 let windowState = {}
 
 function createWindow() {
-  const systemHandler = require('./handlers/system')
   const saved = systemHandler.loadWorkspace(app)
   const windowConfig = saved?.window || {}
   windowState = {
-    width: Math.max(windowConfig.width || 1400, 800),
-    height: Math.max(windowConfig.height || 900, 500),
+    width: windowConfig.width || 1400,
+    height: windowConfig.height || 900,
     x: windowConfig.x,
     y: windowConfig.y,
     maximized: windowConfig.maximized || false,
   }
-
-  const displays = screen.getAllDisplays()
-  const isVisible = displays.some(d => {
-    const b = d.workArea
-    return windowState.x !== undefined && windowState.y !== undefined &&
-           windowState.x < b.x + b.width && windowState.x + windowState.width > b.x &&
-           windowState.y < b.y + b.height && windowState.y + windowState.height > b.y
-  })
-  if (!isVisible) {
-    windowState.x = undefined
-    windowState.y = undefined
-    windowState.maximized = false
-  }
-
-  const iconPath = path.join(__dirname, '../assets/Logo1.png')
-  const packedIconPath = path.join(process.resourcesPath || '', 'assets', 'Logo1.png')
 
   mainWindow = new BrowserWindow({
     width: windowState.width,
@@ -46,9 +37,8 @@ function createWindow() {
     minWidth: 800,
     minHeight: 500,
     frame: false,
-    backgroundColor: '#0f0f0f',
-    show: false,
-    icon: fs.existsSync(iconPath) ? iconPath : (fs.existsSync(packedIconPath) ? packedIconPath : undefined),
+    transparent: true,
+    backgroundColor: '#00000000',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -59,16 +49,6 @@ function createWindow() {
   if (windowState.maximized) {
     mainWindow.maximize()
   }
-
-  const showWindow = () => {
-    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) {
-      mainWindow.show()
-    }
-  }
-
-  mainWindow.once('ready-to-show', showWindow)
-  mainWindow.on('did-fail-load', () => showWindow())
-  setTimeout(showWindow, 3000)
 
   const distPath = path.join(__dirname, '../dist/index.html')
   if (fs.existsSync(distPath)) {
@@ -83,13 +63,7 @@ function createWindow() {
   let dragging = false
   try { [lastX, lastY] = mainWindow.getPosition() } catch {}
 
-  mainWindow.on('resize', () => {
-    try {
-      if (!mainWindow.isMaximized() && !isSnapping) {
-        windowState = { width: mainWindow.getWidth(), height: mainWindow.getHeight(), x: mainWindow.getX(), y: mainWindow.getY(), maximized: false }
-      }
-    } catch {}
-  })
+  mainWindow.on('resize', () => { try { if (!mainWindow.isMaximized() && !isSnapping) windowState = { width: mainWindow.getWidth(), height: mainWindow.getHeight(), x: mainWindow.getX(), y: mainWindow.getY(), maximized: false } } catch {} })
 
   const snapPoll = setInterval(() => {
     try {
@@ -97,7 +71,9 @@ function createWindow() {
       const [wx, wy] = mainWindow.getPosition()
 
       if (wx !== lastX || wy !== lastY) {
-        if (Date.now() >= snapCooldown) dragging = true
+        if (Date.now() >= snapCooldown) {
+          dragging = true
+        }
         lastX = wx
         lastY = wy
         if (dragging) return
@@ -107,8 +83,8 @@ function createWindow() {
       if (Date.now() < snapCooldown) { dragging = false; return }
 
       dragging = false
-      const [ww] = mainWindow.getSize()
-      const display = screen.getDisplayMatching({ x: wx, y: wy, width: ww, height: mainWindow.getHeight() })
+      const [ww, wh] = mainWindow.getSize()
+      const display = screen.getDisplayMatching({ x: wx, y: wy, width: ww, height: wh })
       const bounds = display.workArea
       const EDGE = 8
 
@@ -147,7 +123,7 @@ function createWindow() {
         isSnapping = false
         return
       }
-    } catch {} }, 150)
+    } catch {} }, 50)
 
   mainWindow.on('closed', () => clearInterval(snapPoll))
   mainWindow.on('maximize', () => { windowState.maximized = true; try { mainWindow.webContents.send('window-maximize-change', true) } catch {} })
@@ -157,14 +133,6 @@ function createWindow() {
 app.whenReady().then(() => {
   Menu.setApplicationMenu(null)
   createWindow()
-
-  const systemHandler = require('./handlers/system')
-  const fileOpsHandler = require('./handlers/fileOps')
-  const thumbnailsHandler = require('./handlers/thumbnails')
-  const searchHandler = require('./handlers/search')
-  const transferHandler = require('./handlers/transfer')
-  const clipboardHandler = require('./handlers/clipboard')
-  const windowControlsHandler = require('./handlers/windowControls')
 
   const deps = {
     getMainWindow,
@@ -189,7 +157,6 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   globalShortcut.unregisterAll()
-  const systemHandler = require('./handlers/system')
   const workspace = systemHandler.loadWorkspace(app) || {}
   workspace.window = windowState
   if (mainWindow) {

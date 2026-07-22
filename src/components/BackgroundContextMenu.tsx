@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useLayoutEffect } from "react"
 import { useStore } from "../stores/useStore"
 import { FolderPlus, FilePlus, Clipboard, RefreshCw, FolderSearch, Star } from "lucide-react"
 import { PluginBackgroundContextItems } from "../plugins/ExtensionPoint"
-import { MenuItem, Sep } from './MenuItem'
 
 export default function BackgroundContextMenu() {
   const bgContextMenu = useStore((s) => s.bgContextMenu)
@@ -164,4 +163,32 @@ export default function BackgroundContextMenu() {
       </div>
     </>
   )
+}
+
+function MenuItem({ icon, label, danger, onClick }: { icon?: React.ReactElement; label: string; danger?: boolean; onClick?: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+        width: "100%",
+        padding: "5px 12px",
+        fontSize: 12.5,
+        color: danger ? "var(--danger)" : "var(--text-primary)",
+        background: "transparent",
+        textAlign: "left",
+        cursor: onClick ? "pointer" : "default",
+      }}
+      onMouseEnter={(e) => { if (onClick) e.currentTarget.style.background = "var(--bg-hover)" }}
+      onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+    >
+      {icon}{label}
+    </button>
+  )
+}
+
+function Sep() {
+  return <div style={{ height: 1, background: "var(--border-subtle)", margin: "4px 0" }} />
 }

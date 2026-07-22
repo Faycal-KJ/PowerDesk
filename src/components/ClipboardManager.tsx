@@ -8,6 +8,8 @@ import {
   Clipboard,
   File,
   FileText,
+  Copy,
+  Pin,
   Trash,
   Clock,
 } from 'lucide-react'

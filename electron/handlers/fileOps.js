@@ -6,11 +6,6 @@ const dirCache = new Map()
 const DIR_CACHE_MAX = 100
 const DIR_CACHE_TTL = 5000
 
-function isPathSafe(filePath) {
-  const normalized = path.normalize(filePath)
-  return !normalized.includes('..')
-}
-
 const mimeMap = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
@@ -30,14 +25,14 @@ function readMeta(dirPath) {
     if (fs.existsSync(mp)) {
       return JSON.parse(fs.readFileSync(mp, 'utf-8'))
     }
-  } catch (e) { console.error('[PowerDesk] readMeta:', e.message) }
+  } catch {}
   return {}
 }
 
 function writeMeta(dirPath, data) {
   try {
     fs.writeFileSync(metaPath(dirPath), JSON.stringify(data, null, 2), 'utf-8')
-  } catch (e) { console.error('[PowerDesk] writeMeta:', e.message) }
+  } catch {}
 }
 
 function getItemMeta(dirPath, itemName) {
@@ -86,28 +81,30 @@ async function readDirectory(dirPath) {
     }
     dirCache.set(dirPath, { data: files, timestamp: now })
     return files
-  } catch (e) { console.error('[PowerDesk] readDirectory:', e.message); return null }
+  } catch {
+    return null
+  }
 }
 
 async function copyFile(src, dest) {
   try {
     await fsPromises.cp(src, dest, { recursive: true, errorOnExist: false })
     return true
-  } catch (e) { console.error('[PowerDesk] copyFile:', e.message); return false }
+  } catch { return false }
 }
 
 async function deleteFile(filePath) {
   try {
     await fsPromises.rm(filePath, { recursive: true, force: true })
     return true
-  } catch (e) { console.error('[PowerDesk] deleteFile:', e.message); return false }
+  } catch { return false }
 }
 
 async function renameFile(oldPath, newPath) {
   try {
     await fsPromises.rename(oldPath, newPath)
     return true
-  } catch (e) { console.error('[PowerDesk] renameFile:', e.message); return false }
+  } catch { return false }
 }
 
 async function createFolder(dirPath, name) {
@@ -126,8 +123,7 @@ async function createFile(dirPath, name) {
   } catch (e) { return { success: false, error: e.message } }
 }
 
-async function getFolderSize(dirPath, depth = 0) {
-  if (depth > 10) return 0
+async function getFolderSize(dirPath) {
   let totalSize = 0
   try {
     const entries = await fsPromises.readdir(dirPath, { withFileTypes: true })
@@ -136,16 +132,18 @@ async function getFolderSize(dirPath, depth = 0) {
       try {
         const stat = await fsPromises.stat(fullPath)
         if (entry.isDirectory()) {
-          return await getFolderSize(fullPath, depth + 1)
+          return await getFolderSize(fullPath)
         }
         return stat.size
-      } catch (e) { console.error('[PowerDesk] getFolderSize stat:', e.message); return 0 }
+      } catch {
+        return 0
+      }
     })
     const sizes = await Promise.allSettled(promises)
     for (const r of sizes) {
       if (r.status === 'fulfilled') totalSize += r.value
     }
-  } catch (e) { console.error('[PowerDesk] getFolderSize:', e.message) }
+  } catch {}
   return totalSize
 }
 
@@ -166,7 +164,7 @@ function register(ipcMain, deps) {
       addRecentFile(filePath)
       require('electron').shell.openPath(filePath)
       return true
-    } catch (e) { console.error('[PowerDesk] openPath:', e.message); return false }
+    } catch { return false }
   })
 
   ipcMain.handle('read-file-text', async (_event, filePath) => {
@@ -197,13 +195,15 @@ function register(ipcMain, deps) {
 
   ipcMain.handle('check-files-exist', async (_event, paths) => {
     const results = {}
-    const checks = paths.map(async (p) => {
+    for (const p of paths) {
       try {
+        await fsPromises.access(p)
         const stat = await fsPromises.stat(p)
         results[p] = { exists: true, isDirectory: stat.isDirectory(), size: stat.size }
-      } catch (e) { console.error('[PowerDesk] check-files-exist:', p, e.message); results[p] = { exists: false } }
-    })
-    await Promise.allSettled(checks)
+      } catch {
+        results[p] = { exists: false }
+      }
+    }
     return results
   })
 
@@ -216,7 +216,6 @@ function register(ipcMain, deps) {
   })
 
   ipcMain.handle('trash-file', async (_event, filePath) => {
-    if (!isPathSafe(filePath)) return { error: 'Invalid path' }
     try {
       const { app } = require('electron')
       const trashDir = path.join(app.getPath('userData'), 'trash')
@@ -243,28 +242,15 @@ function register(ipcMain, deps) {
   })
 
   ipcMain.handle('file-rename', async (_event, oldPath, newPath) => {
-    if (!isPathSafe(oldPath) || !isPathSafe(newPath)) return { error: 'Invalid path' }
     return await renameFile(oldPath, newPath)
   })
 
   ipcMain.handle('create-folder', async (_event, dirPath, name) => {
-    if (!isPathSafe(dirPath)) return { success: false, error: 'Invalid path' }
     return await createFolder(dirPath, name)
   })
 
   ipcMain.handle('create-file', async (_event, dirPath, name) => {
-    if (!isPathSafe(dirPath)) return { success: false, error: 'Invalid path' }
     return await createFile(dirPath, name)
-  })
-
-  ipcMain.handle('write-file-text', async (_event, filePath, content) => {
-    if (!isPathSafe(filePath)) return { error: 'Invalid path' }
-    try {
-      await fsPromises.writeFile(filePath, content, 'utf-8')
-      return { success: true }
-    } catch (e) {
-      return { error: e.message }
-    }
   })
 
   ipcMain.handle('get-folder-size', async (_event, dirPath) => {

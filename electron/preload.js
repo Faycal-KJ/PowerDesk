@@ -1,19 +1,13 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
-function onChannel(channel, callback) {
-  const handler = (_event, ...args) => callback(...args)
-  ipcRenderer.on(channel, handler)
-  return () => ipcRenderer.removeListener(channel, handler)
-}
-
 contextBridge.exposeInMainWorld('electronAPI', {
   searchBuildIndex: (roots) => ipcRenderer.invoke('search-build-index', roots),
   searchQuery: (q) => ipcRenderer.invoke('search-query', q),
   searchStatus: () => ipcRenderer.invoke('search-status'),
-  onIndexProgress: (callback) => onChannel('index-progress', callback),
+  onIndexProgress: (callback) => ipcRenderer.on('index-progress', (_e, c) => callback(c)),
   loadWorkspace: () => ipcRenderer.invoke('load-workspace'),
   saveWorkspace: (tabs) => ipcRenderer.invoke('save-workspace', tabs),
-  onSaveWorkspaceRequest: (callback) => onChannel('save-workspace-request', callback),
+  onSaveWorkspaceRequest: (callback) => ipcRenderer.on('save-workspace-request', callback),
   readDir: (dirPath) => ipcRenderer.invoke('read-dir', dirPath),
   refreshDir: (dirPath) => ipcRenderer.invoke('refresh-dir', dirPath),
   openPath: (filePath) => ipcRenderer.invoke('open-path', filePath),
@@ -31,7 +25,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   fileRename: (oldPath, newPath) => ipcRenderer.invoke('file-rename', oldPath, newPath),
   createFolder: (dirPath, name) => ipcRenderer.invoke('create-folder', dirPath, name),
   createFile: (dirPath, name) => ipcRenderer.invoke('create-file', dirPath, name),
-  writeFileText: (filePath, content) => ipcRenderer.invoke('write-file-text', filePath, content),
   getFolderSize: (dirPath) => ipcRenderer.invoke('get-folder-size', dirPath),
   getFolderSizesBatch: (dirPaths) => ipcRenderer.invoke('get-folder-sizes-batch', dirPaths),
   getItemMeta: (dirPath, itemName) => ipcRenderer.invoke('get-item-meta', dirPath, itemName),
@@ -58,7 +51,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   transferResume: (id) => ipcRenderer.invoke('transfer-resume', id),
   transferCancel: (id) => ipcRenderer.invoke('transfer-cancel', id),
   transferRetry: (id) => ipcRenderer.invoke('transfer-retry', id),
-  onTransferProgress: (callback) => onChannel('transfer-progress', callback),
+  onTransferProgress: (callback) => ipcRenderer.on('transfer-progress', (_e, data) => callback(data)),
   analyzeFolder: (dirPath) => ipcRenderer.invoke('analyze-folder', dirPath),
   fileInspect: (filePath) => ipcRenderer.invoke('file-inspect', filePath),
   readClipboardText: () => ipcRenderer.invoke('read-clipboard-text'),
@@ -70,9 +63,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   windowMaximize: () => ipcRenderer.send('window-maximize'),
   windowClose: () => ipcRenderer.send('window-close'),
   windowIsMaximized: () => ipcRenderer.invoke('window-is-maximized'),
-  onWindowMaximizeChange: (callback) => onChannel('window-maximize-change', callback),
+  onWindowMaximizeChange: (callback) => ipcRenderer.on('window-maximize-change', (_e, v) => callback(v)),
 
   // Multi Window Sync
   syncBroadcast: (channel, data) => ipcRenderer.send('sync-broadcast', channel, data),
-  onSyncMessage: (callback) => onChannel('sync-message', callback),
+  onSyncMessage: (callback) => {
+    ipcRenderer.on('sync-message', (_event, channel, data) => callback(channel, data))
+  },
 })

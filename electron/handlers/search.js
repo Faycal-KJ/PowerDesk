@@ -3,14 +3,14 @@ const fs = require('fs')
 const fsPromises = require('fs/promises')
 
 const searchIndex = { files: [], built: false, building: false, rootPaths: new Set() }
-const INDEX_MAX_FILES = 1_000_000
 
 function getSearchRoots() {
-  const { homedir } = require('os')
-  const home = homedir()
-  const dirs = []
-  try { fs.accessSync(home); dirs.push(home) } catch {}
-  return dirs
+  const d = []
+  for (let i = 65; i <= 90; i++) {
+    const p = String.fromCharCode(i) + ':\\'
+    try { fs.accessSync(p); d.push(p) } catch {}
+  }
+  return d
 }
 
 const SKIP_DIRS = new Set([
@@ -31,7 +31,7 @@ function isSkipDir(name) {
   return name.startsWith('.') || SKIP_DIRS.has(name)
 }
 
-const INDEXER_CONCURRENCY = 128
+const INDEXER_CONCURRENCY = 64
 
 async function buildIndexWorker_Node(rootPaths, onProgress) {
   searchIndex.files = []
@@ -68,16 +68,12 @@ async function buildIndexWorker_Node(rootPaths, onProgress) {
           modifiedAt,
           extension: isDir ? '' : path.extname(e.name).toLowerCase(),
         })
-        if (searchIndex.files.length >= INDEX_MAX_FILES) {
-          if (onProgress) onProgress(scanned)
-          return
-        }
         if (isDir) dirs.push(fp)
       } catch {}
     }
 
     if (dirs.length > 0) pending.push(...dirs)
-    if (onProgress && scanned % 1000 === 0) onProgress(scanned)
+    if (onProgress && scanned % 5000 === 0) onProgress(scanned)
   }
 
   while (pending.length > 0 || active > 0) {
@@ -155,15 +151,10 @@ async function buildIndex(rootPaths, app, onProgress) {
     ? path.join(process.resourcesPath, 'bin', binName)
     : goBinaryPath
 
-  if (fs.existsSync(binPath)) {
-    try {
-      await buildIndex_Go(binPath, rootPaths, onProgress)
-    } catch (e) {
-      console.error('Go indexer failed, falling back to Node:', e.message)
-      await buildIndexWorker_Node(rootPaths, onProgress)
-    }
-  } else {
-    console.log('[PowerDesk] Go indexer not found, using Node.js indexer')
+  try {
+    await buildIndex_Go(binPath, rootPaths, onProgress)
+  } catch (e) {
+    console.error('Go indexer failed, falling back to Node:', e.message)
     await buildIndexWorker_Node(rootPaths, onProgress)
   }
 

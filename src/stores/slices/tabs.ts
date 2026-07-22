@@ -1,41 +1,11 @@
 import { generateId } from './helpers'
-import type { FileItem, Tab, ViewMode } from '../../types'
+import type { FileItem } from '../../types'
 import type { SetState, GetState } from './helpers'
 import { getApi } from '../../lib/api'
 import { pluginManager } from '../../plugins/pluginManager'
 
-async function navigateHistory(
-  get: GetState, set: SetState,
-  tabId: string, newIdx: number
-) {
-  const tab = get().tabs.find((t: any) => t.id === tabId)
-  if (!tab) return
-  const path = tab.history[newIdx]
-  set((s: any) => ({
-    tabs: s.tabs.map((t: any) =>
-      t.id === tabId
-        ? { ...t, path, title: path.split('\\').pop() || path.split('/').pop() || 'Untitled', historyIndex: newIdx }
-        : t
-    ),
-  }))
-  const api = getApi()
-  if (api && tabId === get().activeTabId) {
-    set({ loading: true, searchQuery: '', focusedFileIndex: -1 })
-    const result = await api.readDir(path)
-    const files = result || []
-    const tagSet = new Set<string>()
-    for (const f of files) {
-      if (f.tags) for (const t of f.tags) tagSet.add(t)
-    }
-    const existingTags = new Set(get().allTags)
-    for (const t of tagSet) existingTags.add(t)
-    set({ files, loading: false, allTags: Array.from(existingTags).sort() })
-    get().loadFolderSizes()
-  }
-}
-
 export interface TabsSlice {
-  tabs: Tab[]
+  tabs: any[]
   activeTabId: string
   addTab: (path?: string) => void
   closeTab: (id: string) => void
@@ -45,7 +15,7 @@ export interface TabsSlice {
   updateTabPath: (id: string, path: string) => void
   navigateBack: (id: string) => void
   navigateForward: (id: string) => void
-  setTabViewMode: (id: string, mode: ViewMode) => void
+  setTabViewMode: (id: string, mode: any) => void
   toggleDualPane: (id: string) => void
   setDualPaneTab: (id: string, otherId: string) => void
   moveTab: (fromId: string, toId: string) => void
@@ -69,6 +39,7 @@ export interface TabsSlice {
   folderSizes: Record<string, number>
   setFolderSizes: (sizes: Record<string, number>) => void
   loadFolderSizes: () => Promise<void>
+  imageCache: Record<string, string>
 
   initialDirs: Record<string, string>
   setInitialDirs: (d: Record<string, string>) => void
@@ -113,6 +84,8 @@ export const createTabsSlice = (set: SetState, get: GetState): TabsSlice => ({
     if (sizes) set((s: any) => ({ folderSizes: { ...s.folderSizes, ...sizes } }))
   },
 
+  imageCache: {},
+
   files: [],
   loading: false,
   searchQuery: '',
@@ -131,13 +104,18 @@ export const createTabsSlice = (set: SetState, get: GetState): TabsSlice => ({
     }
     const previousPath = state.tabs.find((t: any) => t.id === id)?.path
     get().updateTabPath(id, path)
+    if (api.trackRecent) api.trackRecent(path).catch(() => {})
     if (id === state.activeTabId) {
       set({ loading: true, searchQuery: '', focusedFileIndex: -1 })
       const result = await api.readDir(path)
-      set({ files: result || [], loading: false })
-    }
-    if (api.trackRecent && path) {
-      api.trackRecent(path)
+      const files = result || []
+      const tagSet = new Set<string>()
+      for (const f of files) {
+        if (f.tags) for (const t of f.tags) tagSet.add(t)
+      }
+      const existingTags = new Set(get().allTags)
+      for (const t of tagSet) existingTags.add(t)
+      set({ files, loading: false, allTags: Array.from(existingTags).sort() })
     }
     pluginManager.emit('didNavigate', { path, tabId: id, previousPath })
   },
@@ -148,7 +126,16 @@ export const createTabsSlice = (set: SetState, get: GetState): TabsSlice => ({
     const tab = get().tabs.find((t: any) => t.id === get().activeTabId)
     if (tab && tab.path) {
       const result = await api.refreshDir(tab.path)
-      if (result) set({ files: result, loading: false })
+      if (result) {
+        const files = result
+        const tagSet = new Set<string>()
+        for (const f of files) {
+          if (f.tags) for (const t of f.tags) tagSet.add(t)
+        }
+        const existingTags = new Set(get().allTags)
+        for (const t of tagSet) existingTags.add(t)
+        set({ files, loading: false, allTags: Array.from(existingTags).sort() })
+      }
     }
   },
 
@@ -256,13 +243,57 @@ export const createTabsSlice = (set: SetState, get: GetState): TabsSlice => ({
   navigateBack: async (id) => {
     const tab = get().tabs.find((t: any) => t.id === id)
     if (!tab || tab.historyIndex <= 0) return
-    await navigateHistory(get, set, id, tab.historyIndex - 1)
+    const newIdx = tab.historyIndex - 1
+    const path = tab.history[newIdx]
+    set((s: any) => ({
+      tabs: s.tabs.map((t: any) =>
+        t.id === id
+          ? { ...t, path, title: path.split('\\').pop() || path.split('/').pop() || 'Untitled', historyIndex: newIdx }
+          : t
+      ),
+    }))
+    const api = getApi()
+    if (api && id === get().activeTabId) {
+      set({ loading: true, searchQuery: '', focusedFileIndex: -1 })
+      const result = await api.readDir(path)
+      const files = result || []
+      const tagSet = new Set<string>()
+      for (const f of files) {
+        if (f.tags) for (const t of f.tags) tagSet.add(t)
+      }
+      const existingTags = new Set(get().allTags)
+      for (const t of tagSet) existingTags.add(t)
+      set({ files, loading: false, allTags: Array.from(existingTags).sort() })
+      get().loadFolderSizes()
+    }
   },
 
   navigateForward: async (id) => {
     const tab = get().tabs.find((t: any) => t.id === id)
     if (!tab || tab.historyIndex >= tab.history.length - 1) return
-    await navigateHistory(get, set, id, tab.historyIndex + 1)
+    const newIdx = tab.historyIndex + 1
+    const path = tab.history[newIdx]
+    set((s: any) => ({
+      tabs: s.tabs.map((t: any) =>
+        t.id === id
+          ? { ...t, path, title: path.split('\\').pop() || path.split('/').pop() || 'Untitled', historyIndex: newIdx }
+          : t
+      ),
+    }))
+    const api = getApi()
+    if (api && id === get().activeTabId) {
+      set({ loading: true, searchQuery: '', focusedFileIndex: -1 })
+      const result = await api.readDir(path)
+      const files = result || []
+      const tagSet = new Set<string>()
+      for (const f of files) {
+        if (f.tags) for (const t of f.tags) tagSet.add(t)
+      }
+      const existingTags = new Set(get().allTags)
+      for (const t of tagSet) existingTags.add(t)
+      set({ files, loading: false, allTags: Array.from(existingTags).sort() })
+      get().loadFolderSizes()
+    }
   },
 
   setTabViewMode: (id, mode) =>

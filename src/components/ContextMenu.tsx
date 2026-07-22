@@ -1,12 +1,10 @@
 import { useState, useRef, useLayoutEffect } from "react"
 import { useStore } from "../stores/useStore"
 import { getApi } from '../lib/api'
-import { showToast } from './Toast'
 import {
   File, Copy, Clipboard, Pencil, Trash2, Scissors, Palette, Star, Tag, X, Share2, Bot, Workflow, FolderSearch, Bookmark
 } from "lucide-react"
 import { PluginContextMenuItems } from '../plugins/ExtensionPoint'
-import { MenuItem, Sep } from './MenuItem'
 
 const COLORS = [
   { label: "None", value: undefined as string | undefined, color: "var(--text-muted)" },
@@ -119,30 +117,10 @@ export default function ContextMenu() {
         <MenuItem icon={<Copy size={13} />} label={selectedPathsForContext.length > 1 ? `Copy (${selectedPathsForContext.length})` : "Copy"} onClick={() => { setClipboard(selectedPathsForContext.length > 0 ? selectedPathsForContext : [item.path], "copy"); close() }} />
         <MenuItem icon={<Scissors size={13} />} label={selectedPathsForContext.length > 1 ? `Cut (${selectedPathsForContext.length})` : "Cut"} onClick={() => { setClipboard(selectedPathsForContext.length > 0 ? selectedPathsForContext : [item.path], "cut"); close() }} />
         {clipboardItems.length > 0 && (
-          <MenuItem icon={<Clipboard size={13} />} label="Paste here" onClick={async () => {
-            try {
-              await pasteClipboard(isDir ? item.path : parentDir)
-              showToast('success', 'Pasted successfully')
-            } catch {
-              showToast('error', 'Paste failed')
-            }
-            close()
-          }} />
+          <MenuItem icon={<Clipboard size={13} />} label="Paste here" onClick={() => { pasteClipboard(isDir ? item.path : parentDir); close() }} />
         )}
         <MenuItem icon={<Pencil size={13} />} label="Rename" onClick={handleRename} />
-        <MenuItem icon={<Trash2 size={13} />} label={selectedPathsForContext.length > 1 ? `Delete (${selectedPathsForContext.length})` : "Delete"} danger onClick={async () => {
-          const paths = selectedPathsForContext.length > 1 ? selectedPathsForContext : [item.path]
-          let deleted = 0
-          for (const p of paths) {
-            try {
-              await deleteFile(p)
-              deleted++
-            } catch {}
-          }
-          if (deleted > 0) showToast('success', `Deleted ${deleted} item${deleted > 1 ? 's' : ''}`)
-          else showToast('error', 'Failed to delete')
-          close()
-        }} />
+        <MenuItem icon={<Trash2 size={13} />} label="Delete" danger onClick={async () => { await deleteFile(item.path); close() }} />
 
         <Sep />
 
@@ -346,6 +324,15 @@ export default function ContextMenu() {
   )
 }
 
+function MenuItem({ icon, label, danger, muted, onClick }: { icon?: React.ReactElement; label: string; danger?: boolean; muted?: boolean; onClick?: () => void }) {
+  return (
+    <button onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "5px 12px", fontSize: 12.5, color: danger ? "var(--danger)" : muted ? "var(--text-muted)" : "var(--text-primary)", background: "transparent", textAlign: "left", cursor: onClick ? "pointer" : "default" }}
+      onMouseEnter={(e) => { if (onClick) e.currentTarget.style.background = "var(--bg-hover)" }} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+      {icon}{label}
+    </button>
+  )
+}
+
 function SubMenu({ icon, label, children }: { icon?: React.ReactElement; label: string; children: React.ReactNode }) {
   return (
     <div style={{ position: "relative" }} onMouseEnter={(e) => { const sub = e.currentTarget.querySelector("[data-submenu]") as HTMLElement; if (sub) sub.style.display = "block" }} onMouseLeave={(e) => { const sub = e.currentTarget.querySelector("[data-submenu]") as HTMLElement; if (sub) sub.style.display = "none" }}>
@@ -358,4 +345,8 @@ function SubMenu({ icon, label, children }: { icon?: React.ReactElement; label: 
       </div>
     </div>
   )
+}
+
+function Sep() {
+  return <div style={{ height: 1, background: "var(--border-subtle)", margin: "4px 0" }} />
 }

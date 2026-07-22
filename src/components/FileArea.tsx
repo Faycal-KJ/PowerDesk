@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useStore } from '../stores/useStore'
 import { getApi } from '../lib/api'
 import { Folder } from 'lucide-react'
-import { LoadingSpinner } from './LoadingSpinner'
 import GridView from './fileviews/GridView'
 import GalleryView from './fileviews/GalleryView'
 import ListView from './fileviews/ListView'
@@ -182,8 +181,7 @@ export default function FileArea({ pane, tabId }: { pane?: 'left' | 'right' | 's
         }
       } else if (e.key === 'Delete') {
         e.preventDefault()
-        const paths = selectedPaths.size > 1 ? Array.from(selectedPaths) : (idx >= 0 && idx < sorted.length ? [sorted[idx].path] : [])
-        for (const p of paths) deleteFile(p)
+        if (idx >= 0 && idx < sorted.length) deleteFile(sorted[idx].path)
       } else if (e.key === 'F2' && idx >= 0 && idx < sorted.length) {
         e.preventDefault()
         setContextTarget({ item: sorted[idx], x: window.innerWidth / 2, y: window.innerHeight / 2 })
@@ -322,20 +320,12 @@ export default function FileArea({ pane, tabId }: { pane?: 'left' | 'right' | 's
   }, [refresh])
 
   if (isLoading) {
-    return <div style={{ flex: 1 }}><LoadingSpinner label="Loading..." /></div>
+    return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>Loading...</div>
   }
 
   if (filtered.length === 0) {
     return (
-      <div
-        onContextMenu={(e) => {
-          if (!searchQuery) {
-            e.preventDefault()
-            setBgContextMenu({ x: e.clientX, y: e.clientY })
-          }
-        }}
-        style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', gap: 8 }}
-      >
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', gap: 8 }}>
         <Folder size={48} style={{ opacity: 0.3 }} />
         <span>{searchQuery ? 'No results found' : 'This folder is empty'}</span>
         {!tab?.path && <span style={{ fontSize: 12 }}>Select a folder from the sidebar to get started</span>}

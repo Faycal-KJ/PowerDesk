@@ -65,8 +65,23 @@ export default function Sidebar() {
   const activeTagFilter = useStore((s) => s.activeTagFilter)
   const setActiveTagFilter = useStore((s) => s.setActiveTagFilter)
 
-  const favorites = useStore((s) => s.favorites)
-  const userFavorites = favorites.map((f) => ({ name: f.name, path: f.path }))
+  const [userFavorites, setUserFavorites] = useState<Array<{ name: string; path: string }>>([])
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('pdx_favorites')
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        // Handle both old string[] and new FavoriteItem[] formats
+        const items = Array.isArray(parsed)
+          ? parsed.map((item: any) => typeof item === 'string'
+            ? { name: item.split('\\').pop() || item, path: item }
+            : { name: item.name || item.path.split('\\').pop() || item.path, path: item.path })
+          : []
+        setUserFavorites(items)
+      }
+    } catch {}
+  }, [])
 
   useEffect(() => {
     const api = getApi()
@@ -210,14 +225,14 @@ export default function Sidebar() {
         >
           {recentFiles.length === 0 ? (
             <div style={{ padding: '8px 12px', fontSize: 12, color: 'var(--text-muted)' }}>
-              No recent folders
+              No recent items
             </div>
           ) : (
             <div>
               {recentFiles.slice(0, recentLimit).map((file) => (
                 <SidebarItem
                   key={file.path}
-                  icon={<Folder size={13} style={{ color: 'var(--text-muted)' }} />}
+                  icon={<Folder size={13} style={{ color: 'var(--accent)' }} />}
                   label={file.name}
                   onClick={() => handleNavigate(file.path)}
                 />

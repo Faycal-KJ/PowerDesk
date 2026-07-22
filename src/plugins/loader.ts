@@ -3,10 +3,15 @@ import { loadPluginFromManifest } from './pluginApi'
 import type { PluginManifest } from './types'
 import { getApi } from '../lib/api'
 
+const BUNDLED_PLUGINS: Array<{ manifest: PluginManifest; activate: (api: any) => void }> = []
 const log = (msg: string, ...args: any[]) => console.log(`[PluginLoader] ${msg}`, ...args)
 
 export async function loadBundledPlugins() {
-  log('No bundled plugins')
+  for (const plugin of BUNDLED_PLUGINS) {
+    await loadPluginFromManifest(plugin.manifest, '')
+    const api = createTempApi(plugin.manifest.id)
+    plugin.activate(api)
+  }
 }
 
 export async function discoverExternalPlugins(): Promise<PluginManifest[]> {
@@ -77,4 +82,9 @@ export async function loadExternalPlugin(pluginId: string): Promise<boolean> {
     log(`Failed to load external plugin "${pluginId}":`, err)
     return false
   }
+}
+
+function createTempApi(pluginId: string) {
+  const { createPluginApi } = require('./pluginApi')
+  return createPluginApi(pluginId)
 }

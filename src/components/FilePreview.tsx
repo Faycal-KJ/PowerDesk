@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useStore } from '../stores/useStore'
 import { getApi } from '../lib/api'
-import { formatSize, formatDateAbsolute, imageExts } from '../lib/format'
 import { X, ChevronLeft, ChevronRight, File, FileText, Image, Video, Music, FileCode, FileSpreadsheet, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react'
 
 const textExts = new Set([
@@ -24,6 +23,20 @@ const jsonExts = new Set(['.json', '.jsonl'])
 const csvExts = new Set(['.csv', '.tsv'])
 const previewableVideoExts = new Set(['.mp4', '.webm', '.mov', '.avi', '.mkv'])
 const previewableAudioExts = new Set(['.mp3', '.wav', '.ogg', '.flac', '.m4a', '.wma'])
+const imageExts = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg', '.avif', '.heic', '.tiff', '.ico'])
+
+function formatSize(bytes: number) {
+  if (!bytes) return ''
+  const u = ['B', 'KB', 'MB', 'GB']
+  let i = 0; let s = bytes
+  while (s >= 1024 && i < u.length - 1) { s /= 1024; i++ }
+  return `${s.toFixed(i === 0 ? 0 : 1)} ${u[i]}`
+}
+
+function formatDate(iso: string) {
+  if (!iso) return ''
+  return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
 
 function renderMarkdown(text: string): string {
   let html = text
@@ -320,8 +333,8 @@ export default function FilePreview() {
         {fileStat && (
           <div style={{ display: 'flex', gap: 20, padding: '6px 14px', borderTop: '1px solid var(--border-subtle)', fontSize: 11, color: 'var(--text-muted)' }}>
             {fileStat.size != null && <span>{formatSize(fileStat.size)}</span>}
-            {fileStat.modifiedAt && <span>Modified: {formatDateAbsolute(fileStat.modifiedAt)}</span>}
-            {fileStat.createdAt && <span>Created: {formatDateAbsolute(fileStat.createdAt)}</span>}
+            {fileStat.modifiedAt && <span>Modified: {formatDate(fileStat.modifiedAt)}</span>}
+            {fileStat.createdAt && <span>Created: {formatDate(fileStat.createdAt)}</span>}
             <span style={{ marginLeft: 'auto' }}>&#8592; &#8594; Navigate &middot; Esc Close</span>
           </div>
         )}

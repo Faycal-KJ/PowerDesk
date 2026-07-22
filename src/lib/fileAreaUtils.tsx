@@ -12,9 +12,6 @@ import {
   FileImage,
 } from 'lucide-react'
 import type { FileItem } from '../types'
-import { formatSize, formatDateRelative, imageExts } from './format'
-
-export { formatSize as formatSize, formatDateRelative as formatDate, imageExts }
 
 const fileIconMap: Record<string, React.ReactElement> = {
   '.md': <FileText style={{ color: 'var(--text-secondary)' }} />,
@@ -87,6 +84,31 @@ export function getFileIcon(file: FileItem, iconSize: number) {
   }
   return <File size={iconSize} style={{ color: 'var(--text-muted)' }} />
 }
+
+export function formatSize(bytes: number): string {
+  if (bytes === 0) return ''
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  let i = 0
+  let size = bytes
+  while (size >= 1024 && i < units.length - 1) {
+    size /= 1024
+    i++
+  }
+  return `${size.toFixed(i === 0 ? 0 : 1)} ${units[i]}`
+}
+
+export function formatDate(iso: string): string {
+  const date = new Date(iso)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  if (days === 0) return 'Today'
+  if (days === 1) return 'Yesterday'
+  if (days < 7) return `${days} days ago`
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+export const imageExts = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp'])
 
 export const thumbnailScale = 7 / 8
 

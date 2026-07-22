@@ -75,6 +75,11 @@ export const createFilesSlice = (set: SetState, get: GetState): FilesSlice => ({
     const newTags = currentTags.filter((t: string) => t !== tag)
     await api.setItemMeta(dirPath, fileName, { tags: newTags })
     state.updateFileMeta(fileName, { tags: newTags })
+    const stillUsed = state.files.some((f: any) => f.tags?.includes(tag))
+    if (!stillUsed) {
+      set({ allTags: state.allTags.filter((t: string) => t !== tag) })
+      if (state.activeTagFilter === tag) set({ activeTagFilter: null })
+    }
     get().pushUndo({
       type: 'tag',
       description: `Remove tag "${tag}" from "${fileName}"`,

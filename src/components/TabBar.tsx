@@ -1,7 +1,6 @@
 import { useStore } from '../stores/useStore'
 import { X, Pin, Plus, Copy, Columns } from 'lucide-react'
 import { useState, useRef } from 'react'
-import { MenuItem, Sep } from './MenuItem'
 
 export default function TabBar() {
   const tabs = useStore((s) => s.tabs)
@@ -163,5 +162,39 @@ export default function TabBar() {
         </>
       )}
     </>
+  )
+}
+
+function MenuItem({
+  icon,
+  label,
+  onClick,
+  danger,
+}: {
+  icon: React.ReactNode
+  label: string
+  onClick: () => void
+  danger?: boolean
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        width: '100%',
+        padding: '5px 12px',
+        fontSize: 12.5,
+        color: danger ? 'var(--danger)' : 'var(--text-primary)',
+        background: 'transparent',
+        textAlign: 'left',
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
+      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+    >
+      {icon}
+      {label}
+    </button>
   )
 }

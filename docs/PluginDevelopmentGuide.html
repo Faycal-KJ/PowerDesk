@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PowerDesk Plugin Development Guide</title>
+<style>
+  :root { --accent: #7c5cfc; --bg: #0f0f0f; --bg2: #1a1a1a; --bg3: #252525; --text: #e8e8e8; --text2: #999; --border: #333; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+  .container { max-width: 820px; margin: 0 auto; padding: 40px 32px; }
+  h1 { font-size: 28px; margin-bottom: 8px; color: var(--accent); }
+  .subtitle { color: var(--text2); font-size: 14px; margin-bottom: 40px; }
+  h2 { font-size: 18px; margin-top: 40px; margin-bottom: 12px; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  h3 { font-size: 14px; margin-top: 24px; margin-bottom: 8px; color: var(--accent); }
+  p { margin-bottom: 12px; color: var(--text2); font-size: 14px; }
+  code { background: var(--bg3); padding: 2px 6px; border-radius: 4px; font-family: 'Consolas', 'Fira Code', monospace; font-size: 12.5px; color: #c9d1d9; }
+  pre { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; margin-bottom: 16px; }
+  pre code { background: none; padding: 0; font-size: 12.5px; line-height: 1.6; }
+  .note { background: var(--bg3); border-left: 3px solid var(--accent); padding: 12px 16px; border-radius: 0 8px 8px 0; margin-bottom: 16px; font-size: 13px; color: var(--text2); }
+  .note strong { color: var(--text); }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  th { color: var(--accent); font-weight: 600; }
+  td { color: var(--text2); }
+  td code { font-size: 11.5px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  ul, ol { margin-bottom: 12px; padding-left: 24px; }
+  li { margin-bottom: 4px; font-size: 14px; color: var(--text2); }
+  li strong { color: var(--text); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>PowerDesk Plugin Development Guide</h1>
+<p class="subtitle">Version 2.0 — Build extensions for the file explorer you wish Windows came with.</p>
+
+<hr>
+
+<h2>1. Quick Start</h2>
+
+<p>A PowerDesk plugin is a folder containing a <code>manifest.json</code> and an <code>index.js</code> entry file. Plugins live in:</p>
+
+<pre><code>%APPDATA%\PowerDesk\plugins\your-plugin-id\</code></pre>
+
+<p>Each plugin folder looks like this:</p>
+
+<pre><code>my-plugin/
+  manifest.json
+  index.js</code></pre>
+
+<h3>manifest.json</h3>
+
+<pre><code>{
+  "id": "my-plugin",
+  "name": "My Awesome Plugin",
+  "version": "1.0.0",
+  "description": "A brief description of what this plugin does.",
+  "author": "Your Name"
+}</code></pre>
+
+<table>
+  <tr><th>Field</th><th>Required</th><th>Description</th></tr>
+  <tr><td><code>id</code></td><td>Yes</td><td>Unique identifier. Use lowercase + hyphens.</td></tr>
+  <tr><td><code>name</code></td><td>Yes</td><td>Display name shown in Settings.</td></tr>
+  <tr><td><code>version</code></td><td>Yes</td><td>Semantic version string (e.g. <code>"1.0.0"</code>).</td></tr>
+  <tr><td><code>description</code></td><td>Yes</td><td>Short description shown in the plugin list.</td></tr>
+  <tr><td><code>author</code></td><td>Yes</td><td>Your name or organization.</td></tr>
+  <tr><td><code>permissions</code></td><td>No</td><td>Array of permission strings (reserved for future use).</td></tr>
+</table>
+
+<h3>index.js</h3>
+
+<p>Your entry file must export an <code>activate</code> function (or <code>default</code> export). This function receives the <strong>Plugin API</strong> object:</p>
+
+<pre><code>module.exports = { activate(api) {
+  // Register your extension points here
+  api.log.info('Plugin loaded!')
+}}</code></pre>
+
+<div class="note">
+  <strong>Note:</strong> Plugins run in the renderer process. Use CommonJS (<code>module.exports</code>) syntax. React, ReactDOM, and Lucide icons are available as globals via <code>require()</code> shims.
+</div>
+
+<hr>
+
+<h2>2. The Plugin API</h2>
+
+<p>The <code>api</code> object passed to <code>activate()</code> provides access to all extension points. The API is scoped to your plugin ID.</p>
+
+<h3>2.1 api.store — Zustand Store</h3>
+
+<table>
+  <tr><th>Method</th><th>Description</th></tr>
+  <tr><td><code>getState()</code></td><td>Read the full app state (one-shot snapshot).</td></tr>
+  <tr><td><code>setState(partial)</code></td><td>Merge partial state into the store.</td></tr>
+  <tr><td><code>subscribe(listener)</code></td><td>Subscribe to store changes. Returns an unsubscribe function. The listener receives <code>(state, prevState)</code>. <strong>Use this for reactivity</strong> — <code>getState()</code> is a snapshot.</td></tr>
+</table>
+
+<div class="note">
+  <strong>Reactivity:</strong> <code>getState()</code> returns a snapshot at one point in time. To react to changes (e.g. user navigates to a different folder), use <code>subscribe()</code>:
+</div>
+
+<pre><code>const unsub = api.store.subscribe((state, prev) => {
+  if (state.activeTabId !== prev.activeTabId) {
+    const tab = state.tabs.find(t =&gt; t.id === state.activeTabId)
+    api.log.info(`Navigated to: ${tab?.path}`)
+  }
+})
+// Later: unsub()</code></pre>
+
+<h3>2.2 api.ui — UI Extensions (16 Methods)</h3>
+
+<table>
+  <tr><th>Method</th><th>Description</th></tr>
+  <tr><td><code>registerSidebarPanel(panel)</code></td><td>Add a collapsible panel to the sidebar below built-in sections.</td></tr>
+  <tr><td><code>registerToolbarButton(btn)</code></td><td>Add a button to the TopBar toolbar row.</td></tr>
+  <tr><td><code>registerStatusBarEntry(entry)</code></td><td>Add an entry to the status bar at the bottom.</td></tr>
+  <tr><td><code>registerContextMenuItem(item)</code></td><td>Add an item to the file right-click context menu.</td></tr>
+  <tr><td><code>registerBackgroundContextMenuItem(item)</code></td><td>Add an item to the background (folder area) right-click menu.</td></tr>
+  <tr><td><code>registerSettingsTab(tab)</code></td><td>Add a new tab to the Settings panel.</td></tr>
+  <tr><td><code>registerPreviewHandler(handler)</code></td><td>Register a custom preview for specific file extensions.</td></tr>
+  <tr><td><code>registerView(view)</code></td><td>Register a custom view that can be opened as a main area panel.</td></tr>
+  <tr><td><code>registerTabType(tabType)</code></td><td>Register a custom tab type with its own icon and component.</td></tr>
+  <tr><td><code>registerTreeDataProvider(provider)</code></td><td>Register a tree data provider that renders a tree view in the sidebar.</td></tr>
+  <tr><td><code>registerFileDecorationProvider(provider)</code></td><td>Register a file decoration provider (color, badge, tooltip on files).</td></tr>
+  <tr><td><code>registerTheme(theme)</code></td><td>Register a custom theme with color overrides.</td></tr>
+  <tr><td><code>registerTopBarItem(item)</code></td><td>Register a custom item in the top bar (next to tabs).</td></tr>
+</table>
+
+<h3>2.3 api.events — Event System</h3>
+
+<p>Subscribe to app-wide events. All listeners receive the event payload. Returns an unsubscribe function.</p>
+
+<table>
+  <tr><th>Event</th><th>Payload</th><th>Description</th></tr>
+  <tr><td><code>didNavigate</code></td><td><code>{ path, tabId, previousPath }</code></td><td>Fired when a tab navigates to a new folder.</td></tr>
+  <tr><td><code>didTabChange</code></td><td><code>{ tabId, previousTabId }</code></td><td>Fired when the active tab changes.</td></tr>
+  <tr><td><code>didFileOperation</code></td><td><code>{ type, path, destination? }</code></td><td>Fired after a file operation (copy, move, delete, rename, create).</td></tr>
+  <tr><td><code>didSettingsChange</code></td><td><code>{ key, value }</code></td><td>Fired when any setting changes.</td></tr>
+  <tr><td><code>appReady</code></td><td><code>void</code></td><td>Fired once after all plugins are loaded and the app is ready.</td></tr>
+</table>
+
+<pre><code>api.events.on('didNavigate', (payload) =&gt; {
+  api.log.info(`Navigated to: ${payload.path}`)
+})
+
+api.events.on('didFileOperation', (payload) =&gt; {
+  if (payload.type === 'delete') api.log.info(`Deleted: ${payload.path}`)
+})</code></pre>
+
+<h3>2.4 api.hooks — Before/After Hooks</h3>
+
+<p>Intercept or modify file operations. <code>before</code> hooks can cancel operations by throwing or returning <code>false</code>.</p>
+
+<table>
+  <tr><th>Method</th><th>Description</th></tr>
+  <tr><td><code>before(operationId, callback)</code></td><td>Run before a file operation. Throw or return <code>false</code> to cancel.</td></tr>
+  <tr><td><code>after(operationId, callback)</code></td><td>Run after a file operation completes.</td></tr>
+</table>
+
+<p>Available hook IDs: <code>deleteFile</code>, <code>renameFile</code>, <code>createFolder</code>, <code>createFile</code>, <code>copyFile</code>, <code>moveFile</code>.</p>
+
+<pre><code>api.hooks.before('deleteFile', (params) =&gt; {
+  // params: { path, permanent }
+  if (params.path.includes('important')) {
+    api.log.warn('Blocked deletion of important file!')
+    return false // Cancel the operation
+  }
+})
+
+api.hooks.after('renameFile', (params) =&gt; {
+  api.log.info(`Renamed ${params.oldPath} → ${params.newPath}`)
+})</code></pre>
+
+<h3>2.5 api.commands — Command Palette</h3>
+
+<table>
+  <tr><th>Method</th><th>Description</th></tr>
+  <tr><td><code>register(cmd)</code></td><td>Add a command to the Command Palette (Ctrl+Shift+P).</td></tr>
+</table>
+
+<pre><code>api.commands.register({
+  id: 'open-terminal-here',
+  label: 'Open Terminal Here',
+  category: 'Tools',
+  shortcut: 'Ctrl+Shift+`',
+  action: () =&gt; {
+    const state = api.store.getState()
+    const tab = state.tabs.find(t =&gt; t.id === state.activeTabId)
+    if (tab?.path) api.ipc.invoke('terminal-exec', tab.path, 'cd')
+  },
+})</code></pre>
+
+<h3>2.6 api.shortcuts — Keyboard Shortcuts</h3>
+
+<table>
+  <tr><th>Method</th><th>Description</th></tr>
+  <tr><td><code>register(binding)</code></td><td>Register a global keyboard shortcut.</td></tr>
+</table>
+
+<pre><code>api.shortcuts.register({
+  id: 'focus-search',
+  keys: 'Ctrl+Shift+F',
+  action: () =&gt; api.log.info('Search shortcut triggered!'),
+})</code></pre>
+
+<h3>2.7 api.fs — File System</h3>
+
+<table>
+  <tr><th>Method</th><th>Description</th></tr>
+  <tr><td><code>readDir(dirPath)</code></td><td>List files in a directory. Returns <code>FileItem[]</code>.</td></tr>
+  <tr><td><code>readFile(filePath)</code></td><td>Read a file as text. Returns <code>{ content: string, size: number }</code>.</td></tr>
+  <tr><td><code>writeFile(filePath, content)</code></td><td>Write text to a file.</td></tr>
+  <tr><td><code>stat(filePath)</code></td><td>Get file stats (size, dates, isDirectory).</td></tr>
+</table>
+
+<h3>2.8 api.ipc — Electron IPC</h3>
+
+<table>
+  <tr><th>Method</th><th>Description</th></tr>
+  <tr><td><code>invoke(channel, ...args)</code></td><td>Call an IPC handler in the main process.</td></tr>
+  <tr><td><code>on(channel, callback)</code></td><td>Listen for IPC messages from main process.</td></tr>
+  <tr><td><code>send(channel, ...args)</code></td><td>Send a message to the main process.</td></tr>
+</table>
+
+<h3>2.9 api.log — Logging</h3>
+
+<table>
+  <tr><th>Method</th><th>Description</th></tr>
+  <tr><td><code>info(message)</code></td><td>Log an informational message. Prefixes with <code>[Plugin:your-id]</code>.</td></tr>
+  <tr><td><code>warn(message)</code></td><td>Log a warning.</td></tr>
+  <tr><td><code>error(message)</code></td><td>Log an error.</td></tr>
+</table>
+
+<hr>
+
+<h2>3. Extension Points — All 16 Types</h2>
+
+<h3>3.1 Sidebar Panel</h3>
+
+<p>Add a collapsible panel below the built-in sidebar sections (Tags, Drives, etc.):</p>
+
+<pre><code>const { createElement: h } = require('react')
+
+module.exports = { activate(api) {
+  function MyPanel() {
+    const files = api.store.getState().files
+    const dirs = files.filter(f =&gt; f.isDirectory).length
+    return h('div', { style: { padding: '8px 12px', fontSize: 12 } },
+      h('div', { style: { color: 'var(--accent)', fontWeight: 600, marginBottom: 4 } }, 'Folder Stats'),
+      h('div', { style: { color: 'var(--text-secondary)' } },
+        `${dirs} directories, ${files.length - dirs} files`
+      )
+    )
+  }
+
+  api.ui.registerSidebarPanel({
+    id: 'folder-stats',
+    label: 'Folder Stats',
+    icon: h('span', null, '\u{1F4CA}'),
+    component: MyPanel,
+    position: 100,
+  })
+}}</code></pre>
+
+<h3>3.2 Toolbar Button</h3>
+
+<pre><code>module.exports = { activate(api) {
+  api.ui.registerToolbarButton({
+    id: 'quick-note',
+    label: 'Quick Note',
+    icon: '📝',
+    onClick: () =&gt; {
+      const state = api.store.getState()
+      const tab = state.tabs.find(t =&gt; t.id === state.activeTabId)
+      if (tab) api.log.info(`Current folder: ${tab.path}`)
+    },
+  })
+}}</code></pre>
+
+<h3>3.3 Status Bar Entry</h3>
+
+<pre><code>const { createElement: h } = require('react')
+
+module.exports = { activate(api) {
+  function GitBranch() {
+    return h('span', { style: { color: 'var(--accent)', fontSize: 11 } }, 'main')
+  }
+
+  api.ui.registerStatusBarEntry({
+    id: 'git-branch',
+    component: GitBranch,
+    position: 5,
+  })
+}}</code></pre>
+
+<h3>3.4 File Context Menu Item</h3>
+
+<p>Add an item to the right-click menu when selecting files/folders:</p>
+
+<pre><code>module.exports = { activate(api) {
+  api.ui.registerContextMenuItem({
+    id: 'copy-path',
+    label: 'Copy Full Path',
+    icon: '📋',
+    onClick: () =&gt; {
+      const state = api.store.getState()
+      if (state.contextTarget?.item) {
+        navigator.clipboard.writeText(state.contextTarget.item.path)
+        api.log.info('Path copied!')
+      }
+    },
+    condition: (state) =&gt; !!state.contextTarget?.item,
+    dividerAfter: true,
+    position: 5,
+  })
+}}</code></pre>
+
+<h3>3.5 Background Context Menu Item</h3>
+
+<p>Add an item to the right-click menu on empty folder area:</p>
+
+<pre><code>module.exports = { activate(api) {
+  api.ui.registerBackgroundContextMenuItem({
+    id: 'open-in-terminal',
+    label: 'Open in Terminal',
+    icon: '💻',
+    onClick: () =&gt; {
+      const state = api.store.getState()
+      const tab = state.tabs.find(t =&gt; t.id === state.activeTabId)
+      if (tab) api.log.info(`Terminal at: ${tab.path}`)
+    },
+    position: 100,
+  })
+}}</code></pre>
+
+<h3>3.6 Settings Tab</h3>
+
+<pre><code>const { createElement: h } = require('react')
+
+module.exports = { activate(api) {
+  function MySettings() {
+    return h('div', { style: { padding: '8px 0', fontSize: 13, color: 'var(--text-secondary)' } },
+      h('p', null, 'Configure your plugin settings here.')
+    )
+  }
+
+  api.ui.registerSettingsTab({
+    id: 'my-plugin-settings',
+    label: 'My Plugin',
+    icon: '🔧',
+    component: MySettings,
+    position: 100,
+  })
+}}</code></pre>
+
+<h3>3.7 Preview Handler</h3>
+
+<p>Register a custom preview for file types not natively supported:</p>
+
+<pre><code>const { createElement: h } = require('react')
+
+module.exports = { activate(api) {
+  function LogPreview({ file }) {
+    const [content, setContent] = h('div', null, `Loading ${file.name}...`)
+    return h('div', { style: { padding: 16, fontSize: 12, fontFamily: 'Consolas, monospace' } },
+      content
+    )
+  }
+
+  api.ui.registerPreviewHandler({
+    id: 'log-preview',
+    extensions: ['.log', '.out'],
+    component: LogPreview,
+  })
+}}</code></pre>
+
+<h3>3.8 Custom View</h3>
+
+<p>Register a view that can be opened as a main area panel (like a terminal or markdown editor):</p>
+
+<pre><code>const { createElement: h } = require('react')
+
+module.exports = { activate(api) {
+  function DashboardView() {
+    return h('div', { style: { padding: 24 } },
+      h('h2', { style: { color: 'var(--accent)', marginBottom: 12 } }, 'Dashboard'),
+      h('p', { style: { color: 'var(--text-secondary)' } },
+        'Custom plugin view rendered in the main area.')
+    )
+  }
+
+  api.ui.registerView({
+    id: 'dashboard',
+    title: 'Dashboard',
+    icon: '📊',
+    component: DashboardView,
+  })
+
+  // Open it programmatically:
+  // api.store.getState().openPluginView('dashboard')
+}}</code></pre>
+
+<h3>3.9 Custom Tab Type</h3>
+
+<p>Register a tab type that PowerDesk will use when opening files matching your extensions:</p>
+
+<pre><code>const { createElement: h } = require('react')
+
+module.exports = { activate(api) {
+  function MarkdownTab({ file }) {
+    return h('div', { style: { padding: 24, fontSize: 14, lineHeight: 1.8 } },
+      h('h1', null, file.name),
+      h('p', { style: { color: 'var(--text-secondary)' } }, 'Rendered markdown content...')
+    )
+  }
+
+  api.ui.registerTabType({
+    id: 'markdown',
+    label: 'Markdown',
+    icon: '📝',
+    extensions: ['.md', '.mdx'],
+    component: MarkdownTab,
+  })
+}}</code></pre>
+
+<h3>3.10 Tree Data Provider</h3>
+
+<p>Register a tree view that appears in the sidebar. The provider supplies nodes, and the sidebar renders them as a collapsible tree:</p>
+
+<pre><code>const { createElement: h } = require('react')
+
+module.exports = { activate(api) {
+  api.ui.registerTreeDataProvider({
+    id: 'project-structure',
+    label: 'Project',
+    getTreeNodes: () =&gt; {
+      return [
+        { id: 'src', label: 'src', icon: '📁', children: [
+          { id: 'components', label: 'components', icon: '📁', children: [
+            { id: 'app', label: 'App.tsx', icon: '📄', filePath: '/src/components/App.tsx' },
+          ]},
+          { id: 'index', label: 'index.ts', icon: '📄', filePath: '/src/index.ts' },
+        ]},
+        { id: 'package', label: 'package.json', icon: '📄', filePath: '/package.json' },
+      ]
+    },
+    onNodeClick: (node) =&gt; {
+      if (node.filePath) api.log.info(`Clicked: ${node.filePath}`)
+    },
+    position: 10,
+  })
+}}</code></pre>
+
+<p>Tree nodes can have <code>children</code> for nested trees. Click events pass the full node object.</p>
+
+<h3>3.11 File Decoration Provider</h3>
+
+<p>Add visual decorations (color, badge, tooltip) to files in the grid and list views:</p>
+
+<pre><code>module.exports = { activate(api) {
+  api.ui.registerFileDecorationProvider({
+    id: 'git-status',
+    getFileDecoration: (file) =&gt; {
+      if (file.name.endsWith('.ts') || file.name.endsWith('.tsx')) {
+        return {
+          color: '#3178c6',     // TypeScript blue
+          badge: 'TS',          // Small badge text
+          tooltip: 'TypeScript file',
+        }
+      }
+      if (file.name.endsWith('.test.ts')) {
+        return {
+          color: '#4caf50',
+          badge: 'TEST',
+          fontWeight: 'bold',
+          strikethrough: false,
+        }
+      }
+      return undefined // No decoration
+    },
+  })
+}}</code></pre>
+
+<p>Decoration properties:</p>
+<table>
+  <tr><th>Property</th><th>Type</th><th>Description</th></tr>
+  <tr><td><code>color</code></td><td><code>string</code></td><td>Background color for the file name badge area.</td></tr>
+  <tr><td><code>badge</code></td><td><code>string</code></td><td>Short text badge shown on the file.</td></tr>
+  <tr><td><code>tooltip</code></td><td><code>string</code></td><td>Tooltip text on hover.</td></tr>
+  <tr><td><code>strikethrough</code></td><td><code>boolean</code></td><td>Cross out the file name.</td></tr>
+  <tr><td><code>fontStyle</code></td><td><code>string</code></td><td>CSS font-style (e.g. <code>'italic'</code>).</td></tr>
+  <tr><td><code>fontWeight</code></td><td><code>string</code></td><td>CSS font-weight (e.g. <code>'bold'</code>).</td></tr>
+</table>
+
+<h3>3.12 Theme Extension</h3>
+
+<p>Register a theme that overrides CSS variables at runtime:</p>
+
+<pre><code>module.exports = { activate(api) {
+  api.ui.registerTheme({
+    id: 'ocean-blue',
+    name: 'Ocean Blue',
+    colors: {
+      'accent': '#0077b6',
+      'accent-hover': '#0096c7',
+      'bg-primary': '#023047',
+      'bg-secondary': '#023e5e',
+      'text-primary': '#caf0f8',
+    },
+  })
+
+  // Apply it immediately:
+  // api.store.getState().setTheme('ocean-blue')
+}}</code></pre>
+
+<h3>3.13 Top Bar Item</h3>
+
+<p>Add a custom item to the top bar area (next to tabs):</p>
+
+<pre><code>const { createElement: h } = require('react')
+
+module.exports = { activate(api) {
+  function WeatherWidget() {
+    return h('span', { style: { fontSize: 11, color: 'var(--text-secondary)', padding: '0 8px' } },
+      '☀️ 72°F'
+    )
+  }
+
+  api.ui.registerTopBarItem({
+    id: 'weather',
+    component: WeatherWidget,
+    position: 50,
+  })
+}}</code></pre>
+
+<hr>
+
+<h2>4. Accessing App State</h2>
+
+<p>The Zustand store contains the full application state. Here are the key slices:</p>
+
+<pre><code>const state = api.store.getState()
+
+// Current tabs
+state.tabs            // Tab[]
+state.activeTabId     // string
+// NOTE: state.activeTab does NOT exist!
+// Derive it: tabs.find(t =&gt; t.id === activeTabId)
+
+// Files in current view
+state.files           // FileItem[]
+state.focusedFileIndex // number
+
+// Sidebar
+state.sidebarOpen     // boolean
+state.initialDirs     // Record&lt;string, string&gt;
+
+// UI settings
+state.ui              // UiSettings (accentColor, fontSize, theme, etc.)
+state.settings        // AppSettings (defaultView, confirmDelete, etc.)
+
+// Clipboard
+state.clipboardItems  // ClipboardItem[]
+
+// Transfers
+state.transfers       // Transfer[]
+
+// Tags
+state.allTags         // string[]
+state.fileTags        // Record&lt;string, string[]&gt;
+
+// Favorites
+state.favorites       // FavoriteItem[]</code></pre>
+
+<div class="note">
+  <strong>Important:</strong> There is no <code>state.activeTab</code> property. The store has <code>tabs[]</code> and <code>activeTabId</code> separately. Always derive the active tab:
+  <br><br>
+  <code>const tab = state.tabs.find(t =&gt; t.id === state.activeTabId)</code>
+</div>
+
+<div class="note">
+  <strong>Navigation:</strong> To navigate to a folder, call <code>api.store.getState().navigateTo('/path/to/folder')</code>.
+</div>
+
+<hr>
+
+<h2>5. Best Practices</h2>
+
+<ul>
+  <li><strong>Use unique IDs:</strong> Prefix your plugin ID with your org name (e.g. <code>acme-file-tools</code>) to avoid collisions.</li>
+  <li><strong>Use <code>position</code>:</strong> Lower values appear first. Default is 50. Use 10-20 for high priority, 80-100 for low priority.</li>
+  <li><strong>Subscribe for reactivity:</strong> Use <code>api.store.subscribe()</code> in components that need to re-render on state changes. <code>getState()</code> is a one-shot snapshot.</li>
+  <li><strong>Graceful degradation:</strong> Check for API availability before calling IPC methods. Not all channels may be present.</li>
+  <li><strong>Clean up:</strong> Store unsubscribe functions from <code>subscribe()</code> and <code>events.on()</code> for cleanup.</li>
+  <li><strong>CSS Variables:</strong> Use the app's CSS variables (<code>var(--accent)</code>, <code>var(--text-secondary)</code>, etc.) so your UI matches the active theme.</li>
+  <li><strong>React Components:</strong> Use <code>createElement</code> (aliased as <code>h</code>) or JSX. React 18 is available globally.</li>
+  <li><strong>Don't block:</strong> Never run synchronous heavy computation in the renderer. Use async operations and <code>setTimeout</code>.</li>
+  <li><strong>Hook safety:</strong> Before hooks can cancel operations. Only block operations you need to — don't block everything.</li>
+</ul>
+
+<hr>
+
+<h2>6. Plugin Lifecycle</h2>
+
+<ol>
+  <li><strong>Discovery:</strong> On app launch, PowerDesk scans <code>%APPDATA%\PowerDesk\plugins\</code> for folders containing <code>manifest.json</code>.</li>
+  <li><strong>Loading:</strong> Each valid plugin's <code>index.js</code> is loaded via <code>new Function()</code> with a CJS shim providing <code>require('react')</code> and <code>require('lucide-react')</code>.</li>
+  <li><strong>Activation:</strong> The <code>activate(api)</code> function is called. Register your extension points here.</li>
+  <li><strong>Runtime:</strong> Your registered components and handlers remain active until the app closes or the plugin is disabled. Events fire for navigation, file operations, and tab changes.</li>
+  <li><strong>Disable/Enable:</strong> Users can toggle plugins on/off in Settings &gt; Plugins. Disabled plugins have their extensions hidden but remain loaded in memory.</li>
+</ol>
+
+<hr>
+
+<h2>7. Full Example</h2>
+
+<p>A plugin that adds a sidebar panel, file decorations, a background context menu item, listens to events, and registers a custom view:</p>
+
+<pre><code>// manifest.json
+{
+  "id": "file-insights",
+  "name": "File Insights",
+  "version": "1.0.0",
+  "description": "Shows file analytics, decorations, and a dashboard view.",
+  "author": "PowerDesk Community"
+}
+
+// index.js
+const { createElement: h } = require('react')
+
+module.exports = { activate(api) {
+
+  // ─── Sidebar Panel ────────────────────────────────────────────
+  function InsightsPanel() {
+    const [data, setData] = h('div', { style: { padding: 12 } }, 'Loading...')
+    h('useEffect', () =&gt; {
+      const unsub = api.store.subscribe((state) =&gt; {
+        const files = state.files
+        const totalSize = files.reduce((sum, f) =&gt; sum + (f.size || 0), 0)
+        setData(
+          h('div', { style: { fontSize: 12 } },
+            h('div', { style: { fontWeight: 600, marginBottom: 8, color: 'var(--accent)' } }, 'Insights'),
+            h('div', null, `Files: ${files.length}`),
+            h('div', null, `Total size: ${(totalSize / 1024).toFixed(1)} KB`)
+          )
+        )
+      })
+      return unsub
+    }, [])
+    return data
+  }
+
+  api.ui.registerSidebarPanel({
+    id: 'insights',
+    label: 'Insights',
+    icon: h('span', null, '📊'),
+    component: InsightsPanel,
+    position: 100,
+  })
+
+  // ─── File Decorations ─────────────────────────────────────────
+  api.ui.registerFileDecorationProvider({
+    id: 'insights-deco',
+    getFileDecoration: (file) =&gt; {
+      if (file.size &gt; 1024 * 1024) {
+        return { color: '#ff6b6b', badge: 'L', tooltip: 'Large file' }
+      }
+      return undefined
+    },
+  })
+
+  // ─── Background Context Menu ──────────────────────────────────
+  api.ui.registerBackgroundContextMenuItem({
+    id: 'open-insights',
+    label: 'View Insights',
+    icon: '📊',
+    onClick: () =&gt; api.log.info('Opening insights dashboard...'),
+    position: 100,
+  })
+
+  // ─── Event Listeners ──────────────────────────────────────────
+  api.events.on('didNavigate', (payload) =&gt; {
+    api.log.info(`Folder changed: ${payload.path}`)
+  })
+
+  api.events.on('didFileOperation', (payload) =&gt; {
+    api.log.info(`File op: ${payload.type} — ${payload.path}`)
+  })
+
+  // ─── Custom View ──────────────────────────────────────────────
+  function DashboardView() {
+    return h('div', { style: { padding: 24 } },
+      h('h2', { style: { color: 'var(--accent)' } }, 'Insights Dashboard'),
+      h('p', { style: { color: 'var(--text-secondary)', marginTop: 8 } },
+        'Custom view rendered in the main area.')
+    )
+  }
+
+  api.ui.registerView({
+    id: 'insights-dashboard',
+    title: 'Insights',
+    icon: '📊',
+    component: DashboardView,
+  })
+
+  // ─── Command ──────────────────────────────────────────────────
+  api.commands.register({
+    id: 'open-insights-dashboard',
+    label: 'Open Insights Dashboard',
+    category: 'Tools',
+    action: () =&gt; api.store.getState().openPluginView('insights-dashboard'),
+  })
+
+  api.log.info('File Insights plugin activated!')
+}}</code></pre>
+
+<hr>
+
+<h2>8. Troubleshooting</h2>
+
+<ul>
+  <li><strong>Plugin not showing up?</strong> Check the browser console (F12) for errors. Ensure your <code>manifest.json</code> has all required fields. Check the Plugins tab in Settings.</li>
+  <li><strong>Component not rendering?</strong> Make sure your <code>activate()</code> function is being called. Check <code>api.log.info('loaded!')</code>.</li>
+  <li><strong>Store not updating reactively?</strong> Don't rely on <code>getState()</code> for ongoing updates. Use <code>subscribe()</code> to get notified of changes.</li>
+  <li><strong>No <code>state.activeTab</code>?</strong> The store has <code>tabs[]</code> and <code>activeTabId</code>. Derive it: <code>tabs.find(t =&gt; t.id === activeTabId)</code>.</li>
+  <li><strong>Keyboard shortcut not working?</strong> Make sure the key string matches: <code>Ctrl+Shift+K</code>, <code>Alt+F5</code>, etc. Check for conflicts with built-in shortcuts.</li>
+  <li><strong>Context menu not appearing?</strong> Check the <code>condition</code> function if you set one — it must return <code>true</code>.</li>
+  <li><strong>Sidebar too wide / layout broken?</strong> Plugin sidebar panels are constrained by the sidebar width. Use <code>overflow: auto</code> on scrollable content.</li>
+  <li><strong>Hook not firing?</strong> Ensure the hook ID matches exactly: <code>deleteFile</code>, <code>renameFile</code>, <code>createFolder</code>, <code>createFile</code>.</li>
+</ul>
+
+<hr>
+
+<h2>9. Available CSS Variables</h2>
+
+<p>Use these in your plugin components for theme consistency:</p>
+
+<table>
+  <tr><th>Variable</th><th>Description</th></tr>
+  <tr><td><code>--accent</code></td><td>Primary accent color</td></tr>
+  <tr><td><code>--accent-hover</code></td><td>Accent hover state</td></tr>
+  <tr><td><code>--bg-primary</code></td><td>App background</td></tr>
+  <tr><td><code>--bg-secondary</code></td><td>Panel/sidebar background</td></tr>
+  <tr><td><code>--bg-tertiary</code></td><td>Card/input background</td></tr>
+  <tr><td><code>--text-primary</code></td><td>Primary text</td></tr>
+  <tr><td><code>--text-secondary</code></td><td>Muted text</td></tr>
+  <tr><td><code>--border-color</code></td><td>Border color</td></tr>
+  <tr><td><code>--hover-bg</code></td><td>Hover background</td></tr>
+  <tr><td><code>--selected-bg</code></td><td>Selected item background</td></tr>
+  <tr><td><code>--radius-sm</code></td><td>Small border radius</td></tr>
+  <tr><td><code>--radius-md</code></td><td>Medium border radius</td></tr>
+  <tr><td><code>--radius-lg</code></td><td>Large border radius</td></tr>
+</table>
+
+<hr>
+
+<p style="text-align: center; color: var(--text2); font-size: 12px; margin-top: 40px;">
+  PowerDesk Plugin Development Guide v2.0<br>
+  Built with Electron + React + TypeScript + Vite
+</p>
+
+</div>
+</body>
+</html>

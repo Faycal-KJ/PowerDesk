@@ -1,5 +1,4 @@
 import type { UndoEntry } from '../../types'
-import type { PowerDeskState } from '../useStore'
 
 export function generateId() {
   return Math.random().toString(36).substring(2, 9)
@@ -22,7 +21,7 @@ export function saveUndoHistory(undoStack: UndoEntry[], redoStack: UndoEntry[]) 
   saveJson('pdx_undo', { undoStack: undoStack.slice(-100), redoStack: redoStack.slice(-100) })
 }
 
-export type SetState = (partial: Partial<PowerDeskState> | ((state: PowerDeskState) => Partial<PowerDeskState>)) => void
-export type GetState = () => PowerDeskState
+export type SetState = (partial: Partial<any> | ((state: any) => Partial<any>)) => void
+export type GetState = () => any
 
 export type SliceCreator<T> = (set: SetState, get: GetState) => T
