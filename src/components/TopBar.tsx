@@ -14,12 +14,23 @@ import {
   Plus,
   PanelRight,
   Settings,
+  ArrowUpDown,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react'
 
 const viewModes = [
   { mode: 'grid' as const, icon: <LayoutGrid size={14} />, label: 'Grid' },
   { mode: 'list' as const, icon: <List size={14} />, label: 'List' },
   { mode: 'gallery' as const, icon: <Image size={14} />, label: 'Gallery' },
+]
+
+const sortOptions: { value: string; label: string }[] = [
+  { value: 'name', label: 'Name' },
+  { value: 'date', label: 'Date Modified' },
+  { value: 'size', label: 'Size' },
+  { value: 'type', label: 'Type' },
+  { value: 'tags', label: 'Tags' },
 ]
 
 export default function TopBar() {
@@ -40,6 +51,10 @@ export default function TopBar() {
   const iconSize = useStore((s) => s.iconSize)
   const setIconSize = useStore((s) => s.setIconSize)
   const setSettingsOpen = useStore((s) => s.setSettingsOpen)
+  const sortBy = useStore((s) => s.sortBy)
+  const setSortBy = useStore((s) => s.setSortBy)
+  const sortDirection = useStore((s) => s.sortDirection)
+  const setSortDirection = useStore((s) => s.setSortDirection)
 
   const [pathEditing, setPathEditing] = useState(false)
   const [pathDraft, setPathDraft] = useState('')
@@ -240,6 +255,54 @@ export default function TopBar() {
           </button>
         ))}
       </div>
+
+      {/* Sort by dropdown */}
+      <div style={{ position: 'relative' }}>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as any)}
+          style={{
+            appearance: 'none',
+            padding: '3px 20px 3px 6px',
+            fontSize: 11.5,
+            background: 'var(--bg-primary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: 'var(--radius-md)',
+            color: 'var(--text-secondary)',
+            cursor: 'pointer',
+            outline: 'none',
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E")`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 5px center',
+          }}
+          title="Sort by"
+        >
+          {sortOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Sort direction toggle */}
+      <button
+        onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          padding: '3px 6px',
+          fontSize: 11.5,
+          background: 'var(--bg-primary)',
+          border: '1px solid var(--border-color)',
+          borderRadius: 'var(--radius-md)',
+          color: 'var(--text-secondary)',
+          cursor: 'pointer',
+        }}
+        title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+      >
+        <ArrowUpDown size={12} />
+        {sortDirection === 'asc' ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+      </button>
 
       {/* Icon size slider */}
       <div

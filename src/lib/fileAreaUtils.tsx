@@ -128,11 +128,39 @@ export function useThumbnailCache(): {
   return { thumbnailCache: thumbnails, addThumbnails }
 }
 
-export function sortFiles(files: FileItem[]): FileItem[] {
+export type SortBy = 'name' | 'date' | 'size' | 'type' | 'tags'
+export type SortDirection = 'asc' | 'desc'
+
+export function sortFiles(files: FileItem[], sortBy: SortBy = 'name', sortDirection: SortDirection = 'asc'): FileItem[] {
+  const dir = sortDirection === 'asc' ? 1 : -1
   return [...files].sort((a, b) => {
     if (a.isDirectory && !b.isDirectory) return -1
     if (!a.isDirectory && b.isDirectory) return 1
-    return a.name.localeCompare(b.name)
+
+    switch (sortBy) {
+      case 'date': {
+        const da = new Date(a.modifiedAt).getTime()
+        const db = new Date(b.modifiedAt).getTime()
+        return (da - db) * dir
+      }
+      case 'size':
+        return (a.size - b.size) * dir
+      case 'type': {
+        const ea = (a.extension || '').toLowerCase()
+        const eb = (b.extension || '').toLowerCase()
+        const cmp = ea.localeCompare(eb)
+        return cmp !== 0 ? cmp * dir : a.name.localeCompare(b.name)
+      }
+      case 'tags': {
+        const ta = (a.tags || []).join(',')
+        const tb = (b.tags || []).join(',')
+        const cmp = ta.localeCompare(tb)
+        return cmp !== 0 ? cmp * dir : a.name.localeCompare(b.name)
+      }
+      case 'name':
+      default:
+        return a.name.localeCompare(b.name) * dir
+    }
   })
 }
 

@@ -6,6 +6,7 @@ import GridView from './fileviews/GridView'
 import GalleryView from './fileviews/GalleryView'
 import ListView from './fileviews/ListView'
 import { imageExts, useThumbnailCache, sortFiles, rectsIntersect } from '../lib/fileAreaUtils'
+import type { SortBy, SortDirection } from '../lib/fileAreaUtils'
 import type { FileItem } from '../types'
 
 export default function FileArea({ pane, tabId }: { pane?: 'left' | 'right' | 'single'; tabId?: string }) {
@@ -45,6 +46,8 @@ export default function FileArea({ pane, tabId }: { pane?: 'left' | 'right' | 's
   const clipboardItems = useStore((s) => s.clipboardItems)
   const setClipboard = useStore((s) => s.setClipboard)
   const pasteClipboard = useStore((s) => s.pasteClipboard)
+  const sortBy = useStore((s) => s.sortBy)
+  const sortDirection = useStore((s) => s.sortDirection)
 
   const [dragOverPath, setDragOverPath] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -333,7 +336,7 @@ export default function FileArea({ pane, tabId }: { pane?: 'left' | 'right' | 's
     )
   }
 
-  const sorted = sortFiles(filtered)
+  const sorted = sortFiles(filtered, sortBy, sortDirection)
   const viewMode = tab?.viewMode || 'grid'
 
   const sharedProps = {

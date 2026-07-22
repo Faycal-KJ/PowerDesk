@@ -3,7 +3,14 @@ import type { SetState, GetState } from './helpers'
 import { getApi } from '../../lib/api'
 import { pluginManager } from '../../plugins/pluginManager'
 
+export type SortBy = 'name' | 'date' | 'size' | 'type' | 'tags'
+export type SortDirection = 'asc' | 'desc'
+
 export interface FilesSlice {
+  sortBy: SortBy
+  setSortBy: (s: SortBy) => void
+  sortDirection: SortDirection
+  setSortDirection: (d: SortDirection) => void
   activeTagFilter: string | null
   setActiveTagFilter: (tag: string | null) => void
   allTags: string[]
@@ -38,6 +45,10 @@ export interface FilesSlice {
 }
 
 export const createFilesSlice = (set: SetState, get: GetState): FilesSlice => ({
+  sortBy: 'name',
+  setSortBy: (s) => set({ sortBy: s }),
+  sortDirection: 'asc',
+  setSortDirection: (d) => set({ sortDirection: d }),
   activeTagFilter: null,
   setActiveTagFilter: (tag) => set({ activeTagFilter: tag }),
   allTags: [],
