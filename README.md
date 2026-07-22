@@ -210,26 +210,6 @@ powerdesk/
 
 ---
 
-## Feature Roadmap
-
-See [Powerdesk_nextStep.txt.txt](Powerdesk_nextStep.txt.txt) for the full roadmap.
-
-### Completed
-- Phase 1: MVP (core explorer, tabs, sidebar, search, file operations)
-- Phase 2: Professional file management (transfer center, undo, folder analysis, file inspector, preview++)
-- Phase 3: Productivity (clipboard manager, command history, favorite commands, workspace profiles, favorite bar, multi-window sync)
-- Phase 4: Search engine (smart filters, natural language, saved searches)
-
-### Coming Next
-- Phase 5: AI integration
-- Phase 6: Automation (visual node editor)
-- Phase 7: Built-in toolkit (hash checker, file compare, duplicate finder, image converter, PDF tools)
-- Phase 8: Plugin system
-- Phase 9: Cloud sync
-- Phase 10: AETHER integration
-
----
-
 ## License
 
 MIT
