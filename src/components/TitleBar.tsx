@@ -18,8 +18,7 @@ export default function TitleBar() {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    background: 'var(--bg-primary)',
-    borderBottom: '1px solid var(--border-subtle)',
+    background: 'transparent',
     userSelect: 'none',
     flexShrink: 0,
     zIndex: 9999,
@@ -41,8 +40,7 @@ export default function TitleBar() {
           fontSize: 11,
           fontWeight: 600,
           color: 'var(--text-muted)',
-          letterSpacing: '0.5px',
-          textTransform: 'uppercase',
+          letterSpacing: '0.3px',
         }}
       >
         PowerDesk
@@ -60,14 +58,13 @@ export default function TitleBar() {
             border: 'none',
             color: 'var(--text-secondary)',
             cursor: 'pointer',
+            transition: 'background 150ms ease',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'var(--bg-hover)'
-            e.currentTarget.style.color = 'var(--text-primary)'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = 'transparent'
-            e.currentTarget.style.color = 'var(--text-secondary)'
           }}
           title="Minimize"
         >
@@ -85,14 +82,13 @@ export default function TitleBar() {
             border: 'none',
             color: 'var(--text-secondary)',
             cursor: 'pointer',
+            transition: 'background 150ms ease',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'var(--bg-hover)'
-            e.currentTarget.style.color = 'var(--text-primary)'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = 'transparent'
-            e.currentTarget.style.color = 'var(--text-secondary)'
           }}
           title={isMaximized ? 'Restore' : 'Maximize'}
         >
@@ -110,9 +106,10 @@ export default function TitleBar() {
             border: 'none',
             color: 'var(--text-secondary)',
             cursor: 'pointer',
+            transition: 'background 150ms ease',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#e81123'
+            e.currentTarget.style.background = '#c42b1c'
             e.currentTarget.style.color = '#fff'
           }}
           onMouseLeave={(e) => {

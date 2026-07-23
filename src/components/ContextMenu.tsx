@@ -48,7 +48,6 @@ export default function ContextMenu() {
 
   const menuRef = useRef<HTMLDivElement>(null)
 
-  // Clamp menu position so it stays within the viewport
   useLayoutEffect(() => {
     const el = menuRef.current
     if (!el || !contextTarget) return
@@ -96,14 +95,30 @@ export default function ContextMenu() {
     close()
   }
 
+  const menuStyle: React.CSSProperties = {
+    position: "fixed",
+    left: x,
+    top: y,
+    zIndex: 1000,
+    background: "var(--surface-flyout)",
+    border: "1px solid var(--border-card)",
+    borderRadius: "var(--radius-lg)",
+    padding: "6px 0",
+    minWidth: 210,
+    boxShadow: "var(--shadow-lg)",
+    backdropFilter: "blur(40px) saturate(160%)",
+    WebkitBackdropFilter: "blur(40px) saturate(160%)",
+    animation: "scale-in 150ms cubic-bezier(0.33, 0, 0.67, 1)",
+  }
+
   return (
     <>
       <div style={{ position: "fixed", inset: 0, zIndex: 999 }} onClick={close} onContextMenu={(e) => { e.preventDefault(); close() }} />
-      <div ref={menuRef} className="floating-panel" style={{ position: "fixed", left: x, top: y, zIndex: 1000, background: "var(--bg-secondary)", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", padding: "4px 0", minWidth: 190, boxShadow: "var(--shadow)", backdropFilter: "blur(12px)" }} onClick={(e) => e.stopPropagation()}>
+      <div ref={menuRef} style={menuStyle} onClick={(e) => e.stopPropagation()}>
 
         {renaming ? (
-          <div style={{ padding: "4px 8px" }}>
-            <input ref={renameRef} value={renameValue} onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submitRename(); if (e.key === "Escape") setRenaming(false) }} onBlur={() => setRenaming(false)} style={{ width: "100%", background: "var(--bg-primary)", border: "1px solid var(--accent)", borderRadius: "var(--radius-sm)", padding: "2px 6px", fontSize: 12.5, color: "var(--text-primary)", outline: "none" }} />
+          <div style={{ padding: "4px 10px" }}>
+            <input ref={renameRef} value={renameValue} onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") submitRename(); if (e.key === "Escape") setRenaming(false) }} onBlur={() => setRenaming(false)} style={{ width: "100%", background: "var(--bg-tertiary)", border: "1px solid var(--accent)", borderRadius: "var(--radius-sm)", padding: "4px 8px", fontSize: 12.5, color: "var(--text-primary)", outline: "none" }} />
           </div>
         ) : null}
 
@@ -129,10 +144,10 @@ export default function ContextMenu() {
             <div style={{ position: "relative" }}>
               <MenuItem icon={<Palette size={13} />} label="Color Label" onClick={() => setShowColors(!showColors)} />
               {showColors && (
-                <div style={{ position: "absolute", left: "100%", top: 0, marginLeft: 4, background: "var(--bg-secondary)", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", padding: "4px", boxShadow: "var(--shadow)", zIndex: 1001, minWidth: 120 }}>
+                <div style={{ position: "absolute", left: "100%", top: 0, marginLeft: 6, background: "var(--surface-flyout)", border: "1px solid var(--border-card)", borderRadius: "var(--radius-lg)", padding: "6px", boxShadow: "var(--shadow-lg)", zIndex: 1001, minWidth: 130, backdropFilter: "blur(40px) saturate(160%)" }}>
                   {COLORS.map((c) => (
-                    <button key={c.label} onClick={async () => { await setColor(parentDir, item.name, c.value); close() }} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "4px 8px", fontSize: 12, borderRadius: "var(--radius-sm)", color: "var(--text-primary)", background: item.color === c.value ? "var(--bg-hover)" : "transparent" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={(e) => { if (item.color !== c.value) e.currentTarget.style.background = "transparent" }}>
-                      <span style={{ width: 12, height: 12, borderRadius: "50%", background: c.color || "transparent", border: c.value ? "none" : "1px solid var(--text-muted)" }} />
+                    <button key={c.label} onClick={async () => { await setColor(parentDir, item.name, c.value); close() }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "5px 8px", fontSize: 12, borderRadius: "var(--radius-sm)", color: "var(--text-primary)", background: item.color === c.value ? "var(--bg-active)" : "transparent", transition: "background 100ms ease" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={(e) => { if (item.color !== c.value) e.currentTarget.style.background = "transparent" }}>
+                      <span style={{ width: 10, height: 10, borderRadius: "50%", background: c.color || "transparent", border: c.value ? "none" : "1px solid var(--text-muted)" }} />
                       {c.label}
                     </button>
                   ))}
@@ -149,14 +164,14 @@ export default function ContextMenu() {
             <div style={{ position: "relative" }}>
               <MenuItem icon={<Tag size={13} />} label={selectedPathsForContext.length > 1 ? `Manage Tags (${selectedPathsForContext.length})` : "Manage Tags"} onClick={() => setShowTags(!showTags)} />
               {showTags && (
-                <div style={{ position: "absolute", left: "100%", top: 0, marginLeft: 4, background: "var(--bg-secondary)", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", padding: "8px", boxShadow: "var(--shadow)", zIndex: 1001, minWidth: 200 }}>
-                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6 }}>
+                <div style={{ position: "absolute", left: "100%", top: 0, marginLeft: 6, background: "var(--surface-flyout)", border: "1px solid var(--border-card)", borderRadius: "var(--radius-lg)", padding: "10px", boxShadow: "var(--shadow-lg)", zIndex: 1001, minWidth: 210, backdropFilter: "blur(40px) saturate(160%)" }}>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 8 }}>
                     {selectedPathsForContext.length > 1
                       ? `Tags for ${selectedPathsForContext.length} files`
                       : `Tags for this file`}
                   </div>
                   {item.tags && item.tags.length > 0 && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 10 }}>
                       {item.tags.map((tag) => (
                         <span
                           key={tag}
@@ -165,11 +180,11 @@ export default function ContextMenu() {
                             alignItems: "center",
                             gap: 4,
                             fontSize: 11,
-                            padding: "2px 6px",
-                            borderRadius: 8,
+                            padding: "2px 8px",
+                            borderRadius: 20,
                             background: "var(--accent-bg)",
                             color: "var(--accent)",
-                            border: "1px solid rgba(124, 92, 252, 0.25)",
+                            border: "1px solid rgba(124, 92, 252, 0.2)",
                           }}
                         >
                           {tag}
@@ -215,10 +230,10 @@ export default function ContextMenu() {
                       placeholder="Add tag..."
                       style={{
                         flex: 1,
-                        background: "var(--bg-primary)",
-                        border: "1px solid var(--border-color)",
+                        background: "var(--bg-tertiary)",
+                        border: "1px solid var(--border-card)",
                         borderRadius: "var(--radius-sm)",
-                        padding: "3px 6px",
+                        padding: "4px 8px",
                         fontSize: 11,
                         color: "var(--text-primary)",
                         outline: "none",
@@ -238,11 +253,12 @@ export default function ContextMenu() {
                         }
                       }}
                       style={{
-                        padding: "3px 8px",
+                        padding: "4px 10px",
                         fontSize: 11,
                         borderRadius: "var(--radius-sm)",
                         background: "var(--accent)",
                         color: "#fff",
+                        transition: "background 150ms ease",
                       }}
                     >
                       Add
@@ -326,7 +342,7 @@ export default function ContextMenu() {
 
 function MenuItem({ icon, label, danger, muted, onClick }: { icon?: React.ReactElement; label: string; danger?: boolean; muted?: boolean; onClick?: () => void }) {
   return (
-    <button onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "5px 12px", fontSize: 12.5, color: danger ? "var(--danger)" : muted ? "var(--text-muted)" : "var(--text-primary)", background: "transparent", textAlign: "left", cursor: onClick ? "pointer" : "default" }}
+    <button onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "7px 14px", fontSize: 12.5, color: danger ? "var(--danger)" : muted ? "var(--text-muted)" : "var(--text-primary)", background: "transparent", textAlign: "left", cursor: onClick ? "pointer" : "default", borderRadius: 0, transition: "background 100ms ease" }}
       onMouseEnter={(e) => { if (onClick) e.currentTarget.style.background = "var(--bg-hover)" }} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
       {icon}{label}
     </button>
@@ -336,11 +352,11 @@ function MenuItem({ icon, label, danger, muted, onClick }: { icon?: React.ReactE
 function SubMenu({ icon, label, children }: { icon?: React.ReactElement; label: string; children: React.ReactNode }) {
   return (
     <div style={{ position: "relative" }} onMouseEnter={(e) => { const sub = e.currentTarget.querySelector("[data-submenu]") as HTMLElement; if (sub) sub.style.display = "block" }} onMouseLeave={(e) => { const sub = e.currentTarget.querySelector("[data-submenu]") as HTMLElement; if (sub) sub.style.display = "none" }}>
-      <button style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "5px 12px", fontSize: 12.5, color: "var(--text-primary)", background: "transparent", textAlign: "left", cursor: "pointer" }}
+      <button style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "7px 14px", fontSize: 12.5, color: "var(--text-primary)", background: "transparent", textAlign: "left", cursor: "pointer", transition: "background 100ms ease" }}
         onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
         {icon}{label}
       </button>
-      <div data-submenu style={{ display: "none", position: "absolute", left: "100%", top: 0, marginLeft: 4, background: "var(--bg-secondary)", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", padding: "4px 0", boxShadow: "var(--shadow)", zIndex: 1002, minWidth: 160 }}>
+      <div data-submenu style={{ display: "none", position: "absolute", left: "100%", top: 0, marginLeft: 6, background: "var(--surface-flyout)", border: "1px solid var(--border-card)", borderRadius: "var(--radius-lg)", padding: "6px 0", boxShadow: "var(--shadow-lg)", zIndex: 1002, minWidth: 180, backdropFilter: "blur(40px) saturate(160%)" }}>
         {children}
       </div>
     </div>
