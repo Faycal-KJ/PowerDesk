@@ -22,16 +22,16 @@ export default function FavoriteBar() {
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 4,
-        padding: '3px 12px',
-        background: 'transparent',
-        borderBottom: '1px solid var(--border-subtle)',
+        gap: 2,
+        padding: '2px 8px',
+        background: 'var(--bg-secondary)',
+        borderBottom: '1px solid var(--border-color)',
         overflow: 'auto',
-        minHeight: 30,
+        minHeight: 28,
         userSelect: 'none',
       }}
     >
-      <Star size={11} style={{ color: 'var(--accent)', flexShrink: 0, marginRight: 4 }} />
+      <Star size={11} style={{ color: 'var(--accent)', flexShrink: 0, marginRight: 2 }} />
       {favorites.length === 0 ? (
         <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
           Right-click a file or folder to add to favorites
@@ -63,16 +63,15 @@ export default function FavoriteBar() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 4,
-                padding: '3px 10px',
-                borderRadius: 'var(--radius-md)',
+                gap: 3,
+                padding: '2px 8px',
+                borderRadius: 'var(--radius-sm)',
                 cursor: 'pointer',
                 fontSize: 11,
                 color: 'var(--text-secondary)',
                 background: hoveredIdx === idx ? 'var(--bg-hover)' : 'transparent',
-                border: hoveredIdx === idx ? '1px solid var(--border-card)' : '1px solid transparent',
                 flexShrink: 0,
-                transition: 'all 150ms ease',
+                transition: 'background 0.1s',
               }}
               title={fav.path}
             >
@@ -80,7 +79,7 @@ export default function FavoriteBar() {
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>{fav.name}</span>
               <button
                 onClick={(e) => { e.stopPropagation(); removeFavorite(fav.path) }}
-                style={{ display: 'flex', padding: 0, marginLeft: 1, color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', opacity: hoveredIdx === idx ? 1 : 0, transition: 'opacity 150ms ease' }}
+                style={{ display: 'flex', padding: 0, marginLeft: 1, color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', opacity: hoveredIdx === idx ? 1 : 0, transition: 'opacity 0.1s' }}
                 title="Remove from favorites"
               >
                 <X size={10} />

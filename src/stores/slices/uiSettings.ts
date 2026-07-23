@@ -27,15 +27,15 @@ export type UiSettings = {
 
 export const DEFAULT_UI: UiSettings = {
   opacity: 100, radius: 'round', accentColor: '#7c5cfc',
-  bgPrimary: '#1c1c1c', bgSecondary: '#242424', bgTertiary: '#2d2d2d',
-  textColor: '#fafafa', textSecondary: '#9e9e9e', sidebarBg: '#1e1e1e',
-  borderStyle: 'solid', borderColor: '#383838', fontSize: 13, fontFamily: '',
+  bgPrimary: '#0f0f0f', bgSecondary: '#1a1a1a', bgTertiary: '#252525',
+  textColor: '#e8e8e8', textSecondary: '#999999', sidebarBg: '#121212',
+  borderStyle: 'solid', borderColor: '#3a3a3a', fontSize: 13, fontFamily: '',
   blurBackground: false, animations: true,
   successColor: '#2ecc71', warningColor: '#f39c12', dangerColor: '#e74c3c',
   fontWeight: 400, glassPanels: false, subtleGradients: true, hoverGlow: false,
 }
 
-const RADIUS_MAP = { sharp: '4px', round: '10px', pill: '20px' }
+const RADIUS_MAP = { sharp: '0px', round: '6px', pill: '16px' }
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const h = hex.replace('#', '')
@@ -105,14 +105,14 @@ export function applyUiSettings(ui?: UiSettings) {
   r.style.setProperty('--warning', u.warningColor)
   r.style.setProperty('--danger', u.dangerColor)
   r.style.setProperty('--border-color', u.borderStyle === 'none' ? 'transparent' : u.borderColor)
-  r.style.setProperty('--border-subtle', u.borderStyle === 'none' ? 'transparent' : blendColors(u.bgTertiary, u.borderColor, 0.3))
-  r.style.setProperty('--shadow', isDark ? '0 2px 4px rgba(0,0,0,0.14), 0 8px 24px rgba(0,0,0,0.28)' : '0 2px 4px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08)')
-  r.style.setProperty('--shadow-lg', isDark ? '0 4px 8px rgba(0,0,0,0.16), 0 16px 48px rgba(0,0,0,0.32)' : '0 4px 8px rgba(0,0,0,0.08), 0 16px 48px rgba(0,0,0,0.1)')
-  r.style.setProperty('--shadow-sm', isDark ? '0 1px 2px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.16)' : '0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06)')
-  r.style.setProperty('--radius-sm', u.radius === 'sharp' ? '4px' : RADIUS_MAP[u.radius])
-  r.style.setProperty('--radius-md', u.radius === 'sharp' ? '6px' : RADIUS_MAP[u.radius])
-  r.style.setProperty('--radius-lg', u.radius === 'sharp' ? '8px' : u.radius === 'pill' ? '16px' : '12px')
-  r.style.setProperty('--radius-xl', u.radius === 'sharp' ? '10px' : u.radius === 'pill' ? '20px' : '14px')
+  r.style.setProperty('--border-subtle', u.borderStyle === 'none' ? 'transparent' : blendColors(u.bgTertiary, u.borderColor, 0.4))
+  r.style.setProperty('--shadow', isDark ? '0 2px 8px rgba(0,0,0,0.4)' : '0 2px 8px rgba(0,0,0,0.08)')
+  r.style.setProperty('--shadow-lg', isDark ? '0 4px 24px rgba(0,0,0,0.5)' : '0 4px 24px rgba(0,0,0,0.12)')
+  r.style.setProperty('--shadow-sm', isDark ? '0 1px 3px rgba(0,0,0,0.25)' : '0 1px 3px rgba(0,0,0,0.06)')
+  r.style.setProperty('--radius-sm', RADIUS_MAP[u.radius])
+  r.style.setProperty('--radius-md', RADIUS_MAP[u.radius])
+  r.style.setProperty('--radius-lg', u.radius === 'pill' ? '20px' : RADIUS_MAP[u.radius])
+  r.style.setProperty('--radius-xl', u.radius === 'pill' ? '24px' : RADIUS_MAP[u.radius])
   if (u.fontFamily) r.style.setProperty('--font-sans', u.fontFamily)
   r.style.setProperty('--scrollbar-thumb', lightenColor(u.bgTertiary, 20))
   r.style.setProperty('--font-size-base', u.fontSize + 'px')
@@ -128,7 +128,7 @@ export function applyUiSettings(ui?: UiSettings) {
   }
   const api = getApi()
   if (api?.setWindowOpacity) api.setWindowOpacity(u.opacity / 100)
-  r.style.setProperty('--transition', u.animations ? '200ms cubic-bezier(0.33, 0, 0.67, 1)' : '0ms')
+  r.style.setProperty('--transition', u.animations ? '150ms ease' : '0ms')
 }
 
 let _getUi: (() => UiSettings) | null = null

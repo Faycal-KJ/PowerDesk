@@ -38,22 +38,22 @@ export default function StatusBar() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '3px 12px',
+        padding: '2px 8px',
         background: 'var(--bg-secondary)',
-        borderTop: '1px solid var(--border-subtle)',
-        fontSize: 11,
-        color: 'var(--text-muted)',
-        minHeight: 24,
+        borderTop: '1px solid var(--border-color)',
+        fontSize: 11.5,
+        color: 'var(--text-secondary)',
+        minHeight: 22,
         userSelect: 'none',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         {loading ? (
-          <span style={{ color: 'var(--text-muted)' }}>Loading...</span>
+          <span>Loading...</span>
         ) : activeTab?.path ? (
           <>
             <span>{files.length} items</span>
-            <span style={{ opacity: 0.6 }}>{dirs} folders, {fileCount} files</span>
+            <span>{dirs} folders, {fileCount} files</span>
           </>
         ) : (
           <span>No folder open</span>
@@ -62,113 +62,63 @@ export default function StatusBar() {
         {activeTagFilter && <span style={{ color: 'var(--accent)' }}>Tag: {activeTagFilter}</span>}
         {activeTab?.dualPane && <span style={{ color: 'var(--accent)' }}>Dual Pane</span>}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        <StatusBtn
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <button
           onClick={() => setCommandHistoryOpen(!commandHistoryOpen)}
-          active={commandHistoryOpen}
-          hasContent={commandHistory.length > 0}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '1px 6px', borderRadius: 3, background: commandHistoryOpen ? 'var(--accent-bg)' : 'transparent', color: commandHistoryOpen ? 'var(--accent)' : commandHistory.length > 0 ? 'var(--text-secondary)' : 'var(--text-muted)', cursor: 'pointer', border: 'none', fontSize: 11 }}
           title="Command History (Ctrl+Shift+H)"
         >
-          <History size={11} />
+          <History size={12} />
           {commandHistory.length > 0 && <span>{commandHistory.length}</span>}
-        </StatusBtn>
-        <StatusBtn
+        </button>
+        <button
           onClick={() => setFavoriteCommandsOpen(!favoriteCommandsOpen)}
-          active={favoriteCommandsOpen}
-          hasContent={favoriteCommands.length > 0}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '1px 6px', borderRadius: 3, background: favoriteCommandsOpen ? 'var(--accent-bg)' : 'transparent', color: favoriteCommandsOpen ? 'var(--accent)' : favoriteCommands.length > 0 ? 'var(--text-secondary)' : 'var(--text-muted)', cursor: 'pointer', border: 'none', fontSize: 11 }}
           title="Favorite Commands (Ctrl+Shift+F)"
         >
-          <Bookmark size={11} />
+          <Bookmark size={12} />
           {favoriteCommands.length > 0 && <span>{favoriteCommands.length}</span>}
-        </StatusBtn>
-        <StatusBtn
+        </button>
+        <button
           onClick={() => setClipboardOpen(!clipboardOpen)}
-          active={clipboardOpen}
-          hasContent={clipboardHistory.length > 0}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '1px 6px', borderRadius: 3, background: clipboardOpen ? 'var(--accent-bg)' : 'transparent', color: clipboardOpen ? 'var(--accent)' : clipboardHistory.length > 0 ? 'var(--text-secondary)' : 'var(--text-muted)', cursor: 'pointer', border: 'none', fontSize: 11 }}
           title="Clipboard Manager (Ctrl+Shift+V)"
         >
-          <Clipboard size={11} />
+          <Clipboard size={12} />
           {clipboardHistory.length > 0 && <span>{clipboardHistory.length}</span>}
-        </StatusBtn>
-        <StatusBtn
+        </button>
+        <button
           onClick={() => setProfilesOpen(!profilesOpen)}
-          active={profilesOpen}
-          hasContent={profiles.length > 0}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '1px 6px', borderRadius: 3, background: profilesOpen ? 'var(--accent-bg)' : 'transparent', color: profilesOpen ? 'var(--accent)' : profiles.length > 0 ? 'var(--text-secondary)' : 'var(--text-muted)', cursor: 'pointer', border: 'none', fontSize: 11 }}
           title="Workspace Profiles (Ctrl+Shift+W)"
         >
-          <Layers size={11} />
+          <Layers size={12} />
           {profiles.length > 0 && <span>{profiles.length}</span>}
-        </StatusBtn>
-        <StatusBtn
+        </button>
+        <button
           onClick={() => setUndoHistoryOpen(!undoHistoryOpen)}
-          active={undoHistoryOpen}
-          hasContent={undoStack.length > 0}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '1px 6px', borderRadius: 3, background: undoHistoryOpen ? 'var(--accent-bg)' : 'transparent', color: undoHistoryOpen ? 'var(--accent)' : undoStack.length > 0 ? 'var(--text-secondary)' : 'var(--text-muted)', cursor: 'pointer', border: 'none', fontSize: 11 }}
           title="Undo History (Ctrl+Z / Ctrl+Y)"
         >
-          <Clock size={11} />
+          <Clock size={12} />
           {undoStack.length > 0 && <span>{undoStack.length}</span>}
-        </StatusBtn>
-        <StatusBtn
+        </button>
+        <button
           onClick={() => setSyncEnabled(!syncEnabled)}
-          active={syncEnabled}
-          hasContent={false}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '1px 6px', borderRadius: 3, background: syncEnabled ? 'var(--accent-bg)' : 'transparent', color: syncEnabled ? 'var(--accent)' : 'var(--text-muted)', cursor: 'pointer', border: 'none', fontSize: 11 }}
           title={syncEnabled ? 'Sync enabled — other windows match this one' : 'Enable multi-window sync (Ctrl+Shift+S)'}
         >
-          <Link size={11} />
+          <Link size={12} />
           {syncEnabled && <span>Sync</span>}
-        </StatusBtn>
-        <StatusBtn
+        </button>
+        <button
           onClick={() => setTransferOpen(!transferOpen)}
-          active={activeTransfers > 0}
-          hasContent={activeTransfers > 0}
-          title="Transfer Center"
+          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '1px 6px', borderRadius: 3, background: activeTransfers > 0 ? 'var(--accent-bg)' : 'transparent', color: activeTransfers > 0 ? 'var(--accent)' : 'var(--text-muted)', cursor: 'pointer', border: 'none', fontSize: 11 }}
         >
-          <ArrowDownToLine size={11} />
+          <ArrowDownToLine size={12} />
           {activeTransfers > 0 && <span>{activeTransfers}</span>}
-        </StatusBtn>
+        </button>
       </div>
     </div>
-  )
-}
-
-function StatusBtn({
-  children,
-  onClick,
-  active,
-  hasContent,
-  title,
-}: {
-  children: React.ReactNode
-  onClick: () => void
-  active: boolean
-  hasContent: boolean
-  title: string
-}) {
-  return (
-    <button
-      onClick={onClick}
-      title={title}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 3,
-        padding: '2px 7px',
-        borderRadius: 'var(--radius-sm)',
-        background: active ? 'var(--accent-bg)' : 'transparent',
-        color: active ? 'var(--accent)' : hasContent ? 'var(--text-secondary)' : 'var(--text-muted)',
-        cursor: 'pointer',
-        border: 'none',
-        fontSize: 10.5,
-        transition: 'all 150ms ease',
-      }}
-      onMouseEnter={(e) => {
-        if (!active) e.currentTarget.style.background = 'var(--bg-hover)'
-      }}
-      onMouseLeave={(e) => {
-        if (!active) e.currentTarget.style.background = active ? 'var(--accent-bg)' : 'transparent'
-      }}
-    >
-      {children}
-    </button>
   )
 }

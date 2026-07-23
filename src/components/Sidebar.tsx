@@ -12,6 +12,7 @@ import {
   Image,
   Video,
   Music,
+  Trash2,
   ChevronLeft,
   ChevronRight,
   Folder,
@@ -20,15 +21,16 @@ import {
 } from 'lucide-react'
 
 const iconMap: Record<string, React.ReactNode> = {
-  Star: <Star size={14} />,
-  HardDrive: <HardDrive size={14} />,
-  History: <History size={14} />,
-  Download: <Download size={14} />,
-  Monitor: <Monitor size={14} />,
-  FileText: <FileText size={14} />,
-  Image: <Image size={14} />,
-  Video: <Video size={14} />,
-  Music: <Music size={14} />,
+  Star: <Star size={15} />,
+  HardDrive: <HardDrive size={15} />,
+  History: <History size={15} />,
+  Download: <Download size={15} />,
+  Monitor: <Monitor size={15} />,
+  FileText: <FileText size={15} />,
+  Image: <Image size={15} />,
+  Video: <Video size={15} />,
+  Music: <Music size={15} />,
+  Trash2: <Trash2 size={15} />,
 }
 
 export default function Sidebar() {
@@ -70,6 +72,7 @@ export default function Sidebar() {
       const raw = localStorage.getItem('pdx_favorites')
       if (raw) {
         const parsed = JSON.parse(raw)
+        // Handle both old string[] and new FavoriteItem[] formats
         const items = Array.isArray(parsed)
           ? parsed.map((item: any) => typeof item === 'string'
             ? { name: item.split('\\').pop() || item, path: item }
@@ -125,28 +128,29 @@ export default function Sidebar() {
         minWidth: 160,
         height: '100%',
         background: 'var(--bg-sidebar)',
-        borderRight: '1px solid var(--border-subtle)',
+        borderRight: '1px solid var(--border-color)',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
         userSelect: 'none',
       }}
     >
-      {/* Header */}
       <div
         style={{
-          padding: '12px 16px 8px',
+          padding: '8px 12px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          borderBottom: '1px solid var(--border-subtle)',
         }}
       >
         <span
           style={{
             fontWeight: 600,
             fontSize: 12,
-            color: 'var(--text-muted)',
-            letterSpacing: '0.3px',
+            color: 'var(--text-secondary)',
+            letterSpacing: '0.5px',
+            textTransform: 'uppercase',
           }}
         >
           Explorer
@@ -155,12 +159,11 @@ export default function Sidebar() {
           onClick={() => setSidebarOpen(false)}
           style={{
             color: 'var(--text-muted)',
-            padding: 3,
+            padding: 2,
             borderRadius: 'var(--radius-sm)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'all 150ms ease',
           }}
           onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
           onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
@@ -169,12 +172,11 @@ export default function Sidebar() {
         </button>
       </div>
 
-      {/* Sections */}
-      <div style={{ flex: 1, overflow: 'auto', padding: '4px 8px' }}>
+      <div style={{ flex: 1, overflow: 'auto', padding: '4px 0' }}>
         {/* Favorites */}
         <SidebarSection
           label="Favorites"
-          icon={<Star size={12} />}
+          icon={<Star size={13} />}
           collapsed={collapsed.favorites}
           onToggle={() => toggleSection('favorites')}
         >
@@ -200,7 +202,7 @@ export default function Sidebar() {
         {/* Drives */}
         <SidebarSection
           label="Drives"
-          icon={<HardDrive size={12} />}
+          icon={<HardDrive size={13} />}
           collapsed={collapsed.drives}
           onToggle={() => toggleSection('drives')}
         >
@@ -217,7 +219,7 @@ export default function Sidebar() {
         {/* Recent */}
         <SidebarSection
           label="Recent"
-          icon={<History size={12} />}
+          icon={<History size={13} />}
           collapsed={collapsed.recent}
           onToggle={() => toggleSection('recent')}
         >
@@ -242,7 +244,7 @@ export default function Sidebar() {
         {/* Tags */}
         <SidebarSection
           label="Tags"
-          icon={<Tag size={12} />}
+          icon={<Tag size={13} />}
           collapsed={collapsed.tags}
           onToggle={() => toggleSection('tags')}
         >
@@ -258,17 +260,13 @@ export default function Sidebar() {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 8,
+                    gap: 6,
                     width: '100%',
-                    padding: '5px 12px 5px 20px',
+                    padding: '4px 12px 4px 24px',
                     color: 'var(--accent)',
                     fontSize: 12,
                     background: 'transparent',
-                    borderRadius: 'var(--radius-sm)',
-                    transition: 'background 100ms ease',
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)' }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
                 >
                   <X size={12} />
                   Clear filter
@@ -281,15 +279,13 @@ export default function Sidebar() {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 8,
+                    gap: 6,
                     width: '100%',
-                    padding: '5px 12px 5px 20px',
+                    padding: '4px 12px 4px 24px',
                     color: activeTagFilter === tag ? 'var(--accent)' : 'var(--text-secondary)',
                     fontSize: 12,
                     background: activeTagFilter === tag ? 'var(--accent-bg)' : 'transparent',
-                    fontWeight: activeTagFilter === tag ? 500 : 400,
-                    borderRadius: 'var(--radius-sm)',
-                    transition: 'all 100ms ease',
+                    fontWeight: activeTagFilter === tag ? 600 : 400,
                   }}
                   onMouseEnter={(e) => {
                     if (activeTagFilter !== tag) e.currentTarget.style.background = 'var(--bg-hover)'
@@ -309,7 +305,6 @@ export default function Sidebar() {
         <PluginTreeSections />
       </div>
 
-      {/* Resize handle */}
       <div
         onMouseDown={handleMouseDown}
         style={{
@@ -320,7 +315,6 @@ export default function Sidebar() {
           width: 4,
           cursor: 'col-resize',
           zIndex: 10,
-          transition: 'background 200ms ease',
         }}
         onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--accent)')}
         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
@@ -343,7 +337,7 @@ function SidebarSection({
   onToggle: () => void
 }) {
   return (
-    <div style={{ marginBottom: 2 }}>
+    <div>
       <button
         onClick={onToggle}
         style={{
@@ -351,35 +345,29 @@ function SidebarSection({
           alignItems: 'center',
           gap: 6,
           width: '100%',
-          padding: '6px 8px',
-          color: 'var(--text-muted)',
-          fontSize: 11,
+          padding: '5px 12px',
+          color: 'var(--text-secondary)',
+          fontSize: 11.5,
           fontWeight: 600,
           letterSpacing: '0.3px',
           textTransform: 'uppercase',
           background: 'transparent',
           textAlign: 'left',
-          borderRadius: 'var(--radius-sm)',
-          transition: 'all 150ms ease',
         }}
         onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
       >
         <ChevronRight
-          size={10}
+          size={11}
           style={{
             transform: collapsed ? 'rotate(0deg)' : 'rotate(90deg)',
-            transition: 'transform 200ms cubic-bezier(0.33, 0, 0.67, 1)',
+            transition: 'transform 150ms ease',
           }}
         />
         {icon}
         {label}
       </button>
-      {!collapsed && (
-        <div style={{ animation: 'fade-in 150ms ease' }}>
-          {children}
-        </div>
-      )}
+      {!collapsed && children}
     </div>
   )
 }
@@ -401,13 +389,11 @@ function SidebarItem({
         alignItems: 'center',
         gap: 8,
         width: '100%',
-        padding: '5px 8px 5px 24px',
+        padding: '4px 12px 4px 24px',
         color: 'var(--text-secondary)',
-        fontSize: 12.5,
+        fontSize: 13,
         background: 'transparent',
         textAlign: 'left',
-        borderRadius: 'var(--radius-sm)',
-        transition: 'all 100ms ease',
       }}
       onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
       onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
