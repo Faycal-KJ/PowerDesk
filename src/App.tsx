@@ -56,6 +56,8 @@ export default function App() {
   const setProfilesOpen = useStore((s) => s.setProfilesOpen)
   const favoriteBarOpen = useStore((s) => s.favoriteBarOpen)
   const setFavoriteBarOpen = useStore((s) => s.setFavoriteBarOpen)
+  const showFavoriteBar = useStore((s) => s.ui.showFavoriteBar)
+  const showStatusBar = useStore((s) => s.ui.showStatusBar)
   const commandHistoryOpen = useStore((s) => s.commandHistoryOpen)
   const setCommandHistoryOpen = useStore((s) => s.setCommandHistoryOpen)
   const favoriteCommandsOpen = useStore((s) => s.favoriteCommandsOpen)
@@ -248,28 +250,39 @@ export default function App() {
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <TitleBar />
-      <TopBar />
-      <PluginToolbarRow />
-      <TabBar />
-      <FavoriteBar />
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        {sidebarOpen && (
+      <div style={{ position: 'relative', zIndex: 5 }}>
+        <TitleBar />
+      </div>
+      <div style={{ position: 'relative', zIndex: 4 }}>
+        <TopBar />
+      </div>
+      <div style={{ position: 'relative', zIndex: 4 }}>
+        <PluginToolbarRow />
+      </div>
+      {showFavoriteBar && (
+        <div style={{ position: 'relative', zIndex: 3 }}>
+          <FavoriteBar />
+        </div>
+      )}
+      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', gap: 2, padding: '2px 6px 6px' }}>
           <ErrorBoundary name="Sidebar">
-            <div style={{ display: 'flex', flexDirection: 'column', width: sidebarWidth, flexShrink: 0, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', width: sidebarOpen ? sidebarWidth + 8 : 0, minWidth: sidebarOpen ? sidebarWidth + 8 : 0, flexShrink: 0, overflow: 'hidden', paddingTop: 4, paddingBottom: 4, paddingLeft: 4, position: 'relative', zIndex: 2, transition: 'width 220ms cubic-bezier(0.33, 0, 0.67, 1), min-width 220ms cubic-bezier(0.33, 0, 0.67, 1)' }}>
               <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
                 <Sidebar />
               </div>
-              <SidebarPanels />
+              <div>
+                <SidebarPanels />
+              </div>
             </div>
           </ErrorBoundary>
-        )}
         <div
           style={{
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
+            position: 'relative',
+            zIndex: 0,
           }}
         >
           {dualPane && dualPaneTab ? (
@@ -280,7 +293,6 @@ export default function App() {
                 focused={focusedPane === 'left'}
                 onClick={() => setFocusedPane('left')}
               />
-              <div style={{ width: 1, background: 'var(--border-color)', flexShrink: 0 }} />
               <PaneColumn
                 label={dualPaneTab.title || 'Tab 2'}
                 tabId={dualPaneTabId!}
@@ -295,9 +307,13 @@ export default function App() {
           )}
         </div>
       </div>
-      <ErrorBoundary name="Status Bar">
-        <StatusBar />
-      </ErrorBoundary>
+      {showStatusBar && (
+        <div style={{ position: 'relative', zIndex: 3 }}>
+          <ErrorBoundary name="Status Bar">
+            <StatusBar />
+          </ErrorBoundary>
+        </div>
+      )}
       <ContextMenu />
       <BackgroundContextMenu />
       {searchOpen && (
@@ -358,7 +374,7 @@ function PluginToolbarRow() {
   const topBarItems = pluginManager.getTopBarItems()
   if (buttons.length === 0 && topBarItems.length === 0) return null
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '0 8px 2px', background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 2, padding: '0 8px 2px', background: 'transparent' }}>
       <ToolbarButtons />
       <PluginTopBarItems />
     </div>

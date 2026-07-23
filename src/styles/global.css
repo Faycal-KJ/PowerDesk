@@ -6,40 +6,84 @@
   padding: 0;
 }
 
+/* Animations toggle — disable all when class is absent */
+#root:not(.animations-enabled) *,
+#root:not(.animations-enabled) *::before,
+#root:not(.animations-enabled) *::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+}
+
 :root {
-  --bg-primary: #0f0f0f;
-  --bg-secondary: #1a1a1a;
-  --bg-tertiary: #252525;
-  --bg-hover: #2a2a2a;
-  --bg-active: #333;
-  --bg-sidebar: #121212;
-  --border-color: #2a2a2a;
-  --border-subtle: #222;
-  --text-primary: #e8e8e8;
-  --text-secondary: #999;
-  --text-muted: #666;
+  /* Fluent Design 2 — Mica-inspired dark surfaces */
+  --bg-primary: #1c1c1c;
+  --bg-secondary: #242424;
+  --bg-tertiary: #2d2d2d;
+  --bg-hover: rgba(255, 255, 255, 0.05);
+  --bg-active: rgba(255, 255, 255, 0.08);
+  --bg-sidebar: #1e1e1e;
+  --bg-mica: #161616;
+
+  /* Borders — thin, translucent */
+  --border-color: rgba(255, 255, 255, 0.07);
+  --border-subtle: rgba(255, 255, 255, 0.045);
+  --border-card: rgba(255, 255, 255, 0.06);
+
+  /* Text — softer hierarchy */
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-muted: rgba(255, 255, 255, 0.36);
+
+  /* Accent — restrained */
   --accent: #7c5cfc;
   --accent-hover: #6a4de6;
-  --accent-bg: rgba(124, 92, 252, 0.1);
+  --accent-bg: rgba(124, 92, 252, 0.08);
   --accent-gradient: linear-gradient(135deg, #7c5cfc, #6a4de6);
-  --surface-gradient: linear-gradient(180deg, #1a1a1a, #0f0f0f);
+
+  /* Semantic */
   --danger: #e74c3c;
   --success: #2ecc71;
   --warning: #f39c12;
-  --scrollbar-thumb: #333;
+
+  /* Scrollbar */
+  --scrollbar-thumb: rgba(255, 255, 255, 0.1);
   --scrollbar-track: transparent;
-  --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* Typography */
+  --font-sans: 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
   --font-weight: 400;
   --font-size-base: 13px;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.5);
-  --transition: 150ms ease;
+
+  /* Typography hierarchy */
+  --text-title: 600;
+  --text-subtitle: 500;
+  --text-body: 400;
+  --text-caption: 400;
+  --text-label: 500;
+
+  /* Radii — Fluent Design 2 uses 10-12px */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+
+  /* Shadows — soft, diffused, layered */
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 32px rgba(0, 0, 0, 0.22);
+
+  /* Transitions — smooth, Fluent-timed */
+  --transition: 200ms cubic-bezier(0.33, 0, 0.67, 1);
+  --transition-fast: 150ms cubic-bezier(0.33, 0, 0.67, 1);
+  --transition-medium: 250ms cubic-bezier(0.33, 0, 0.67, 1);
+
+  /* Surface layering — translucent, depth-aware */
+  --surface-card: rgba(255, 255, 255, 0.035);
+  --surface-flyout: rgba(36, 36, 36, 0.94);
+  --surface-elevated: rgba(255, 255, 255, 0.05);
 }
 
 html, body, #root {
@@ -48,18 +92,171 @@ html, body, #root {
   overflow: hidden;
   font-family: var(--font-sans);
   font-weight: var(--font-weight);
-  background: var(--bg-primary);
+  background: var(--bg-mica);
   color: var(--text-primary);
   font-size: var(--font-size-base);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  transition: background 200ms ease, color 200ms ease;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 250ms ease, color 250ms ease;
 }
 
-.glass-panels .floating-panel {
-  backdrop-filter: blur(20px) saturate(180%);
-  background: rgba(30, 30, 30, 0.85) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* Fluent-style transitions — only on interactive elements (not layout-affecting) */
+button, a, .tab-item, .sidebar-item, .list-row, .context-menu-item,
+.sort-btn, .status-pill, input, select, .favorite-item {
+  transition-property: background-color, color, border-color, box-shadow, opacity;
+  transition-duration: var(--transition);
+  transition-timing-function: cubic-bezier(0.33, 0, 0.67, 1);
+}
+
+/* Scrollbar — thin, rounded, subtle */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.18); }
+
+/* Tab close button reveal */
+.tab-close-btn { opacity: 0; }
+.tab-item:hover .tab-close-btn { opacity: 1; }
+
+/* Reset */
+input, button, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; border: none; background: none; }
+a { color: var(--accent); text-decoration: none; }
+
+/* Button refinement — equal padding, radius, hover, pressed */
+.btn, .floating-panel button, .sidebar button, [data-toolbar] button {
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease, transform 100ms ease, opacity 120ms ease, box-shadow 120ms ease;
+}
+.floating-panel button:active:not(:disabled), [data-toolbar] button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+/* Button smooth brighten on hover */
+.floating-panel button:hover:not(:disabled),
+[data-toolbar] button:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+/* Icon fade between states */
+.lucide-icon {
+  transition: opacity 120ms ease, color 120ms ease;
+}
+
+/* Input refinement — taller, softer borders, focus ring */
+input[type="text"], input[type="number"], input:not([type]), textarea, select {
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+input[type="text"]:focus, input[type="number"]:focus, input:not([type]):focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(124, 92, 252, 0.15);
+}
+
+/* Fluent panel — backdrop blur + translucency */
+.floating-panel {
+  backdrop-filter: blur(48px) saturate(150%);
+  -webkit-backdrop-filter: blur(48px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Theme switching — smooth color transitions (only when animations enabled) */
+.animations-enabled .theme-transitioning,
+.animations-enabled .theme-transitioning * {
+  transition: background 250ms ease, background-color 250ms ease, color 250ms ease, border-color 250ms ease, box-shadow 250ms ease !important;
+}
+
+.floating-panel[data-sidebar] {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Fluent-style Mica card surface */
+.mica-surface {
+  background: var(--surface-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+}
+
+/* Selection ring animation */
+@keyframes focus-ring {
+  0% { box-shadow: 0 0 0 2px var(--accent); }
+  100% { box-shadow: 0 0 0 3px var(--accent); }
+}
+
+/* Subtle entrance animation */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* File list entrance — items fade+slide in on navigation/search */
+@keyframes file-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Thumbnail fade-in when loaded */
+@keyframes thumb-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Thumbnail scale on hover */
+[data-file-item]:hover img {
+  transform: scale(1.03);
+  transition: transform 120ms ease;
+}
+
+/* Dragged item slight enlarge */
+[data-file-item][draggable]:active {
+  transform: scale(1.02);
+  opacity: 0.85;
+}
+
+/* Search result items fade in */
+@keyframes search-fade {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Slider thumb enlarge on hover/drag */
+input[type="range"]::-webkit-slider-thumb {
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 3px rgba(124, 92, 252, 0.15);
+}
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.3);
+  box-shadow: 0 0 0 4px rgba(124, 92, 252, 0.2);
+}
+
+/* Sidebar section expand */
+@keyframes section-expand {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 500px; }
+}
+
+/* Fluent hover lift */
+.fluent-hover {
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.fluent-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.glass-panels .floating-panel:not([data-sidebar]) {
+  backdrop-filter: blur(48px) saturate(150%);
+  background: rgba(28, 28, 28, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .subtle-gradients [data-toolbar],
@@ -67,41 +264,31 @@ html, body, #root {
   background: var(--surface-gradient, linear-gradient(180deg, var(--bg-secondary), var(--bg-primary))) !important;
 }
 
-.hover-glow button:hover,
-.hover-glow a:hover {
-  box-shadow: 0 0 12px var(--accent-bg), 0 0 4px var(--accent);
+.subtle-gradients .floating-panel:not([data-sidebar]) {
+  background: var(--surface-gradient, linear-gradient(180deg, var(--bg-secondary), var(--bg-primary))) !important;
 }
 
-* {
-  transition-property: background-color, color, border-color, box-shadow, opacity;
-  transition-duration: var(--transition, 150ms);
-  transition-timing-function: ease;
+.subtle-gradients [data-statusbar] {
+  background: linear-gradient(0deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)) !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
 }
 
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: var(--scrollbar-track); }
-::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
-.tab-close-btn {
-  opacity: 0;
-}
-.tab-item:hover .tab-close-btn {
-  opacity: 1;
+[data-statusbar] {
+  border-radius: 0 !important;
+  margin: 0 !important;
 }
 
-input, button, textarea, select {
-  font: inherit;
-  color: inherit;
+/* Hover Glow — subtle accent glow on all interactables */
+.hover-glow button:hover:not(:disabled),
+.hover-glow .tab-item:hover,
+.hover-glow [data-file-item]:hover,
+.hover-glow .list-row:hover {
+  box-shadow: 0 0 12px rgba(124, 92, 252, 0.15), 0 0 4px rgba(124, 92, 252, 0.1);
 }
-
-button {
-  cursor: pointer;
-  border: none;
-  background: none;
+.hover-glow input:hover, .hover-glow select:hover {
+  box-shadow: 0 0 10px rgba(124, 92, 252, 0.12);
 }
-
-a {
-  color: var(--accent);
-  text-decoration: none;
+.hover-glow .floating-panel:not([data-sidebar]):not([data-statusbar]):hover {
+  box-shadow: 0 0 16px rgba(124, 92, 252, 0.1), 0 4px 16px rgba(0, 0, 0, 0.2);
 }

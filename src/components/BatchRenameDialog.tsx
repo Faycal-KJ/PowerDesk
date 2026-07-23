@@ -44,27 +44,28 @@ export default function BatchRenameDialog({ files, onClose, onDone, onRename }: 
       style={{
         position: 'fixed', inset: 0, zIndex: 2000,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(0,0,0,0.5)',
+        background: 'rgba(0,0,0,0.55)',
+        backdropFilter: 'blur(4px)',
       }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
       <div
         style={{
           background: 'var(--bg-secondary)',
-          border: '1px solid var(--border-color)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
           borderRadius: 'var(--radius-xl)',
-          padding: 20,
+          padding: 24,
           minWidth: 380,
           maxWidth: 500,
-          boxShadow: 'var(--shadow)',
+          boxShadow: '0 4px 8px rgba(0,0,0,0.15), 0 16px 48px rgba(0,0,0,0.3)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12, color: 'var(--text-primary)' }}>
+        <h3 style={{ fontSize: 14, fontWeight: 500, marginBottom: 16, color: 'var(--text-primary)' }}>
           Batch Rename ({files.length} files)
         </h3>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
           <label style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>Name pattern</label>
           <input
             ref={inputRef}
@@ -75,7 +76,7 @@ export default function BatchRenameDialog({ files, onClose, onDone, onRename }: 
           />
         </div>
 
-        <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+        <div style={{ display: 'flex', gap: 14, marginBottom: 16 }}>
           <div style={{ flex: 1 }}>
             <label style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>Start number</label>
             <input

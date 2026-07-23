@@ -13,3 +13,4 @@ export const createSidebarSlice = (set: SetState): SidebarSlice => ({
   setSidebarOpen: (v) => set({ sidebarOpen: v }),
   setSidebarWidth: (w) => set({ sidebarWidth: Math.max(160, Math.min(400, w)) }),
 })
+

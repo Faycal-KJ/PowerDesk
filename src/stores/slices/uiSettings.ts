@@ -23,19 +23,30 @@ export type UiSettings = {
   glassPanels: boolean
   subtleGradients: boolean
   hoverGlow: boolean
+  accentPalette: string[]
+  gridItemSize: number
+  listDensity: 'compact' | 'comfortable' | 'spacious'
+  animationSpeed: 'fast' | 'normal' | 'slow'
+  sidebarDefaultWidth: number
+  tabStyle: 'pill' | 'underline' | 'minimal'
+  showFavoriteBar: boolean
+  showStatusBar: boolean
 }
 
 export const DEFAULT_UI: UiSettings = {
   opacity: 100, radius: 'round', accentColor: '#7c5cfc',
-  bgPrimary: '#0f0f0f', bgSecondary: '#1a1a1a', bgTertiary: '#252525',
-  textColor: '#e8e8e8', textSecondary: '#999999', sidebarBg: '#121212',
-  borderStyle: 'solid', borderColor: '#3a3a3a', fontSize: 13, fontFamily: '',
+  bgPrimary: '#1c1c1c', bgSecondary: '#242424', bgTertiary: '#2d2d2d',
+  textColor: '#fafafa', textSecondary: '#9e9e9e', sidebarBg: '#1e1e1e',
+  borderStyle: 'solid', borderColor: '#383838', fontSize: 13, fontFamily: '',
   blurBackground: false, animations: true,
   successColor: '#2ecc71', warningColor: '#f39c12', dangerColor: '#e74c3c',
   fontWeight: 400, glassPanels: false, subtleGradients: true, hoverGlow: false,
+  accentPalette: ['#7c5cfc', '#3b82f6', '#22c55e', '#f97316', '#f43f5e', '#06b6d4', '#eab308', '#8b5cf6'],
+  gridItemSize: 32, listDensity: 'comfortable', animationSpeed: 'normal',
+  sidebarDefaultWidth: 220, tabStyle: 'underline', showFavoriteBar: true, showStatusBar: true,
 }
 
-const RADIUS_MAP = { sharp: '0px', round: '6px', pill: '16px' }
+const RADIUS_MAP = { sharp: '4px', round: '10px', pill: '20px' }
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const h = hex.replace('#', '')
@@ -86,12 +97,20 @@ export function applyUiSettings(ui?: UiSettings) {
   const u = ui || (_getUi ? _getUi() : null)
   if (!u) return
   const r = document.documentElement
+
+  // Theme switching — smooth transition
+  if (ui) {
+    document.body.classList.add('theme-transitioning')
+    setTimeout(() => document.body.classList.remove('theme-transitioning'), 300)
+  }
+
   const isDark = getBrightness(u.bgPrimary) < 128
   r.style.setProperty('--bg-primary', u.bgPrimary)
   r.style.setProperty('--bg-secondary', u.bgSecondary)
   r.style.setProperty('--bg-tertiary', u.bgTertiary)
-  r.style.setProperty('--bg-hover', u.bgTertiary)
-  r.style.setProperty('--bg-active', lightenColor(u.bgTertiary, 10))
+  r.style.setProperty('--bg-mica', darkenColor(u.bgPrimary, 12))
+  r.style.setProperty('--bg-hover', hexToRgba(u.textColor, 0.04))
+  r.style.setProperty('--bg-active', hexToRgba(u.textColor, 0.07))
   r.style.setProperty('--bg-sidebar', u.sidebarBg)
   r.style.setProperty('--text-primary', u.textColor)
   r.style.setProperty('--text-secondary', u.textSecondary)
@@ -100,35 +119,42 @@ export function applyUiSettings(ui?: UiSettings) {
   r.style.setProperty('--accent-hover', darkenColor(u.accentColor, 15))
   r.style.setProperty('--accent-bg', u.accentColor + '1a')
   r.style.setProperty('--accent-gradient', `linear-gradient(135deg, ${u.accentColor}, ${darkenColor(u.accentColor, 15)})`)
-  r.style.setProperty('--surface-gradient', `linear-gradient(180deg, ${u.bgSecondary}, ${u.bgPrimary})`)
+  r.style.setProperty('--surface-gradient', `linear-gradient(180deg, ${blendColors(lightenColor(u.bgSecondary, 6), u.accentColor, 0.12)}, ${u.bgPrimary})`)
   r.style.setProperty('--success', u.successColor)
   r.style.setProperty('--warning', u.warningColor)
   r.style.setProperty('--danger', u.dangerColor)
-  r.style.setProperty('--border-color', u.borderStyle === 'none' ? 'transparent' : u.borderColor)
-  r.style.setProperty('--border-subtle', u.borderStyle === 'none' ? 'transparent' : blendColors(u.bgTertiary, u.borderColor, 0.4))
-  r.style.setProperty('--shadow', isDark ? '0 2px 8px rgba(0,0,0,0.4)' : '0 2px 8px rgba(0,0,0,0.08)')
-  r.style.setProperty('--shadow-lg', isDark ? '0 4px 24px rgba(0,0,0,0.5)' : '0 4px 24px rgba(0,0,0,0.12)')
-  r.style.setProperty('--shadow-sm', isDark ? '0 1px 3px rgba(0,0,0,0.25)' : '0 1px 3px rgba(0,0,0,0.06)')
-  r.style.setProperty('--radius-sm', RADIUS_MAP[u.radius])
-  r.style.setProperty('--radius-md', RADIUS_MAP[u.radius])
-  r.style.setProperty('--radius-lg', u.radius === 'pill' ? '20px' : RADIUS_MAP[u.radius])
-  r.style.setProperty('--radius-xl', u.radius === 'pill' ? '24px' : RADIUS_MAP[u.radius])
+  r.style.setProperty('--border-color', u.borderStyle === 'none' ? 'transparent' : hexToRgba(u.borderColor, isDark ? 0.08 : 0.08))
+  r.style.setProperty('--border-subtle', u.borderStyle === 'none' ? 'transparent' : hexToRgba(u.borderColor, isDark ? 0.06 : 0.06))
+  r.style.setProperty('--shadow', isDark ? '0 1px 2px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.15)' : '0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06)')
+  r.style.setProperty('--shadow-lg', isDark ? '0 2px 4px rgba(0,0,0,0.1), 0 8px 32px rgba(0,0,0,0.22)' : '0 2px 4px rgba(0,0,0,0.04), 0 8px 32px rgba(0,0,0,0.08)')
+  r.style.setProperty('--shadow-sm', isDark ? '0 1px 2px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.1)' : '0 1px 2px rgba(0,0,0,0.03), 0 2px 8px rgba(0,0,0,0.05)')
+  r.style.setProperty('--radius-sm', u.radius === 'sharp' ? '4px' : RADIUS_MAP[u.radius])
+  r.style.setProperty('--radius-md', u.radius === 'sharp' ? '6px' : RADIUS_MAP[u.radius])
+  r.style.setProperty('--radius-lg', u.radius === 'sharp' ? '8px' : u.radius === 'pill' ? '16px' : '12px')
+  r.style.setProperty('--radius-xl', u.radius === 'sharp' ? '10px' : u.radius === 'pill' ? '20px' : '14px')
   if (u.fontFamily) r.style.setProperty('--font-sans', u.fontFamily)
   r.style.setProperty('--scrollbar-thumb', lightenColor(u.bgTertiary, 20))
   r.style.setProperty('--font-size-base', u.fontSize + 'px')
   r.style.setProperty('--font-weight', String(u.fontWeight))
   const root = document.getElementById('root')
   if (root) {
-    root.style.background = u.blurBackground ? 'rgba(0,0,0,0.85)' : u.bgPrimary
+    root.style.background = u.blurBackground ? 'rgba(0,0,0,0.85)' : 'transparent'
     root.style.minHeight = '100vh'
     root.style.backdropFilter = u.blurBackground ? 'blur(12px)' : 'none'
     root.classList.toggle('glass-panels', u.glassPanels)
     root.classList.toggle('subtle-gradients', u.subtleGradients)
     root.classList.toggle('hover-glow', u.hoverGlow)
+    root.classList.toggle('animations-enabled', u.animations)
   }
   const api = getApi()
   if (api?.setWindowOpacity) api.setWindowOpacity(u.opacity / 100)
-  r.style.setProperty('--transition', u.animations ? '150ms ease' : '0ms')
+  r.style.setProperty('--transition', u.animations ? '200ms cubic-bezier(0.33, 0, 0.67, 1)' : '0ms')
+  r.style.setProperty('--grid-item-size', u.gridItemSize + 'px')
+  r.style.setProperty('--sidebar-default-width', u.sidebarDefaultWidth + 'px')
+  const speedMap = { fast: '120ms', normal: '200ms', slow: '350ms' }
+  if (u.animations) {
+    r.style.setProperty('--transition', speedMap[u.animationSpeed] + ' cubic-bezier(0.33, 0, 0.67, 1)')
+  }
 }
 
 let _getUi: (() => UiSettings) | null = null

@@ -268,7 +268,7 @@ export default function FilePreview() {
   // NON-IMAGE: card-based preview
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }} onClick={(e) => { if (e.target === e.currentTarget) setPreviewFile(null) }}>
-      <div className="floating-panel" style={{ display: 'flex', flexDirection: 'column', width: '85vw', maxWidth: 1000, height: '80vh', maxHeight: 700, background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', boxShadow: '0 8px 40px rgba(0,0,0,0.5)', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
+      <div className="floating-panel" style={{ display: 'flex', flexDirection: 'column', width: '85vw', maxWidth: 1000, height: '80vh', maxHeight: 700, background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: 'var(--radius-xl)', boxShadow: '0 2px 4px rgba(0,0,0,0.1), 0 8px 32px rgba(0,0,0,0.22)', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderBottom: '1px solid var(--border-color)' }}>
           <div style={{ flexShrink: 0, color: 'var(--text-muted)' }}>{getPreviewIcon()}</div>
           <div style={{ flex: 1, overflow: 'hidden' }}>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useStore } from '../stores/useStore'
 import { getApi } from '../lib/api'
 import { PluginTreeSections } from '../plugins/ExtensionPoint'
@@ -12,7 +12,6 @@ import {
   Image,
   Video,
   Music,
-  Trash2,
   ChevronLeft,
   ChevronRight,
   Folder,
@@ -21,16 +20,15 @@ import {
 } from 'lucide-react'
 
 const iconMap: Record<string, React.ReactNode> = {
-  Star: <Star size={15} />,
-  HardDrive: <HardDrive size={15} />,
-  History: <History size={15} />,
-  Download: <Download size={15} />,
-  Monitor: <Monitor size={15} />,
-  FileText: <FileText size={15} />,
-  Image: <Image size={15} />,
-  Video: <Video size={15} />,
-  Music: <Music size={15} />,
-  Trash2: <Trash2 size={15} />,
+  Star: <Star size={14} />,
+  HardDrive: <HardDrive size={14} />,
+  History: <History size={14} />,
+  Download: <Download size={14} />,
+  Monitor: <Monitor size={14} />,
+  FileText: <FileText size={14} />,
+  Image: <Image size={14} />,
+  Video: <Video size={14} />,
+  Music: <Music size={14} />,
 }
 
 export default function Sidebar() {
@@ -50,7 +48,41 @@ export default function Sidebar() {
   const [recentFiles, setRecentFiles] = useState<Array<{ name: string; path: string }>>([])
 
   const activeTab = useStore((s) => s.tabs.find((t) => t.id === s.activeTabId))
+  const activePath = activeTab?.path || ''
   const recentLimit = useStore((s) => s.settings.recentLimit)
+  const subtleGradients = useStore((s) => s.ui?.subtleGradients)
+  const sidebarBg = useStore((s) => s.ui?.sidebarBg)
+  const bgSecondary = useStore((s) => s.ui?.bgSecondary)
+  const accentColor = useStore((s) => s.ui?.accentColor)
+
+  const sidebarGradientStart = (() => {
+    if (!bgSecondary || !accentColor) return '#222222'
+    const h1 = bgSecondary.replace('#', '')
+    const r1 = parseInt(h1.slice(0, 2), 16)
+    const g1 = parseInt(h1.slice(2, 4), 16)
+    const b1 = parseInt(h1.slice(4, 6), 16)
+    const h2 = accentColor.replace('#', '')
+    const r2 = parseInt(h2.slice(0, 2), 16)
+    const g2 = parseInt(h2.slice(2, 4), 16)
+    const b2 = parseInt(h2.slice(4, 6), 16)
+    const mix = 0.15
+    const mr = Math.round(r1 + (r2 - r1) * mix)
+    const mg = Math.round(g1 + (g2 - g1) * mix)
+    const mb = Math.round(b1 + (b2 - b1) * mix)
+    const lr = Math.min(255, Math.round(mr + (255 - mr) * 0.07))
+    const lg = Math.min(255, Math.round(mg + (255 - mg) * 0.07))
+    const lb = Math.min(255, Math.round(mb + (255 - mb) * 0.07))
+    return `rgb(${lr},${lg},${lb})`
+  })()
+
+  const sidebarGradientEnd = (() => {
+    if (!bgSecondary) return 'var(--bg-mica)'
+    const h = bgSecondary.replace('#', '')
+    const r = parseInt(h.slice(0, 2), 16)
+    const g = parseInt(h.slice(2, 4), 16)
+    const b = parseInt(h.slice(4, 6), 16)
+    return `rgb(${Math.round(r * 0.78)},${Math.round(g * 0.78)},${Math.round(b * 0.78)})`
+  })()
 
   useEffect(() => {
     const api = getApi()
@@ -72,7 +104,6 @@ export default function Sidebar() {
       const raw = localStorage.getItem('pdx_favorites')
       if (raw) {
         const parsed = JSON.parse(raw)
-        // Handle both old string[] and new FavoriteItem[] formats
         const items = Array.isArray(parsed)
           ? parsed.map((item: any) => typeof item === 'string'
             ? { name: item.split('\\').pop() || item, path: item }
@@ -123,34 +154,37 @@ export default function Sidebar() {
 
   return (
     <div
+      data-sidebar
+      className="floating-panel"
       style={{
         width: sidebarWidth,
         minWidth: 160,
         height: '100%',
-        background: 'var(--bg-sidebar)',
-        borderRight: '1px solid var(--border-color)',
+        background: subtleGradients ? `linear-gradient(90deg, ${sidebarGradientStart} 0%, ${sidebarGradientEnd} 40%)` : 'var(--bg-sidebar)',
+        boxShadow: '1px 0 6px rgba(0,0,0,0.1), 4px 0 20px rgba(0,0,0,0.06)',
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
         userSelect: 'none',
+        borderRadius: 'var(--radius-lg)',
+        overflow: 'hidden',
       }}
     >
+      {/* Header */}
       <div
         style={{
-          padding: '8px 12px',
+          padding: '12px 16px 10px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          borderBottom: '1px solid var(--border-subtle)',
         }}
       >
         <span
           style={{
             fontWeight: 600,
             fontSize: 12,
-            color: 'var(--text-secondary)',
-            letterSpacing: '0.5px',
-            textTransform: 'uppercase',
+            color: 'var(--text-muted)',
+            letterSpacing: '0.3px',
           }}
         >
           Explorer
@@ -159,11 +193,12 @@ export default function Sidebar() {
           onClick={() => setSidebarOpen(false)}
           style={{
             color: 'var(--text-muted)',
-            padding: 2,
+            padding: 3,
             borderRadius: 'var(--radius-sm)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            transition: 'all 150ms ease',
           }}
           onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
           onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
@@ -172,11 +207,12 @@ export default function Sidebar() {
         </button>
       </div>
 
-      <div style={{ flex: 1, overflow: 'auto', padding: '4px 0' }}>
+      {/* Sections */}
+      <div style={{ flex: 1, overflow: 'auto', padding: '6px 8px' }}>
         {/* Favorites */}
         <SidebarSection
           label="Favorites"
-          icon={<Star size={13} />}
+          icon={<Star size={12} />}
           collapsed={collapsed.favorites}
           onToggle={() => toggleSection('favorites')}
         >
@@ -186,9 +222,10 @@ export default function Sidebar() {
               icon={iconMap[item.icon]}
               label={item.label}
               onClick={() => handleNavigate(initialDirs[item.key])}
+              active={activePath === initialDirs[item.key]}
             />
           ))}
-          {userFavorites.length > 0 && <div style={{ height: 1, background: 'var(--border-subtle)', margin: '4px 8px' }} />}
+          {userFavorites.length > 0 && <div style={{ height: 1, background: 'var(--border-subtle)', margin: '4px 8px', opacity: 0.5 }} />}
           {userFavorites.map((fav) => (
             <SidebarItem
               key={fav.path}
@@ -202,7 +239,7 @@ export default function Sidebar() {
         {/* Drives */}
         <SidebarSection
           label="Drives"
-          icon={<HardDrive size={13} />}
+          icon={<HardDrive size={12} />}
           collapsed={collapsed.drives}
           onToggle={() => toggleSection('drives')}
         >
@@ -212,6 +249,7 @@ export default function Sidebar() {
               icon={<Folder size={13} style={{ color: 'var(--accent)' }} />}
               label={drive}
               onClick={() => handleNavigate(drive)}
+              active={activePath === drive}
             />
           ))}
         </SidebarSection>
@@ -219,7 +257,7 @@ export default function Sidebar() {
         {/* Recent */}
         <SidebarSection
           label="Recent"
-          icon={<History size={13} />}
+          icon={<History size={12} />}
           collapsed={collapsed.recent}
           onToggle={() => toggleSection('recent')}
         >
@@ -235,6 +273,7 @@ export default function Sidebar() {
                   icon={<Folder size={13} style={{ color: 'var(--accent)' }} />}
                   label={file.name}
                   onClick={() => handleNavigate(file.path)}
+                  active={activePath === file.path}
                 />
               ))}
             </div>
@@ -244,7 +283,7 @@ export default function Sidebar() {
         {/* Tags */}
         <SidebarSection
           label="Tags"
-          icon={<Tag size={13} />}
+          icon={<Tag size={12} />}
           collapsed={collapsed.tags}
           onToggle={() => toggleSection('tags')}
         >
@@ -260,13 +299,17 @@ export default function Sidebar() {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 6,
+                    gap: 8,
                     width: '100%',
-                    padding: '4px 12px 4px 24px',
+                    padding: '5px 12px 5px 20px',
                     color: 'var(--accent)',
                     fontSize: 12,
                     background: 'transparent',
+                    borderRadius: 'var(--radius-sm)',
+                    transition: 'background 100ms ease',
                   }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
                 >
                   <X size={12} />
                   Clear filter
@@ -279,13 +322,15 @@ export default function Sidebar() {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 6,
+                    gap: 8,
                     width: '100%',
-                    padding: '4px 12px 4px 24px',
+                    padding: '5px 12px 5px 20px',
                     color: activeTagFilter === tag ? 'var(--accent)' : 'var(--text-secondary)',
                     fontSize: 12,
                     background: activeTagFilter === tag ? 'var(--accent-bg)' : 'transparent',
-                    fontWeight: activeTagFilter === tag ? 600 : 400,
+                    fontWeight: activeTagFilter === tag ? 500 : 400,
+                    borderRadius: 'var(--radius-sm)',
+                    transition: 'all 100ms ease',
                   }}
                   onMouseEnter={(e) => {
                     if (activeTagFilter !== tag) e.currentTarget.style.background = 'var(--bg-hover)'
@@ -305,6 +350,7 @@ export default function Sidebar() {
         <PluginTreeSections />
       </div>
 
+      {/* Resize handle */}
       <div
         onMouseDown={handleMouseDown}
         style={{
@@ -315,6 +361,7 @@ export default function Sidebar() {
           width: 4,
           cursor: 'col-resize',
           zIndex: 10,
+          transition: 'background 200ms ease',
         }}
         onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--accent)')}
         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
@@ -336,8 +383,17 @@ function SidebarSection({
   collapsed: boolean
   onToggle: () => void
 }) {
+  const contentRef = useRef<HTMLDivElement>(null)
+  const [measuredHeight, setMeasuredHeight] = useState(0)
+
+  useEffect(() => {
+    if (contentRef.current && !collapsed) {
+      setMeasuredHeight(contentRef.current.scrollHeight)
+    }
+  })
+
   return (
-    <div>
+    <div style={{ marginBottom: 10 }}>
       <button
         onClick={onToggle}
         style={{
@@ -345,29 +401,42 @@ function SidebarSection({
           alignItems: 'center',
           gap: 6,
           width: '100%',
-          padding: '5px 12px',
-          color: 'var(--text-secondary)',
-          fontSize: 11.5,
-          fontWeight: 600,
-          letterSpacing: '0.3px',
+          padding: '8px 8px',
+          color: 'var(--text-muted)',
+          fontSize: 10,
+          fontWeight: 500,
+          letterSpacing: '0.4px',
           textTransform: 'uppercase',
           background: 'transparent',
           textAlign: 'left',
+          borderRadius: 'var(--radius-sm)',
+          transition: 'all 150ms ease',
+          opacity: 0.7,
         }}
         onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
       >
         <ChevronRight
-          size={11}
+          size={10}
           style={{
             transform: collapsed ? 'rotate(0deg)' : 'rotate(90deg)',
-            transition: 'transform 150ms ease',
+            transition: 'transform 200ms cubic-bezier(0.33, 0, 0.67, 1)',
           }}
         />
         {icon}
         {label}
       </button>
-      {!collapsed && children}
+      <div
+        ref={contentRef}
+        style={{
+          maxHeight: collapsed ? 0 : (measuredHeight || 500),
+          opacity: collapsed ? 0 : 1,
+          overflow: 'hidden',
+          transition: 'max-height 200ms cubic-bezier(0.33, 0, 0.67, 1), opacity 150ms ease',
+        }}
+      >
+        {children}
+      </div>
     </div>
   )
 }
@@ -376,10 +445,12 @@ function SidebarItem({
   icon,
   label,
   onClick,
+  active,
 }: {
   icon: React.ReactNode
   label: string
   onClick: () => void
+  active?: boolean
 }) {
   return (
     <button
@@ -387,16 +458,21 @@ function SidebarItem({
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 8,
+        gap: 10,
         width: '100%',
-        padding: '4px 12px 4px 24px',
-        color: 'var(--text-secondary)',
-        fontSize: 13,
-        background: 'transparent',
+        padding: '7px 8px 7px 24px',
+        color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
+        fontSize: 12.5,
+        fontWeight: active ? 500 : 400,
+        background: active ? 'var(--accent-bg)' : 'transparent',
+        borderLeft: active ? '2px solid var(--accent)' : '2px solid transparent',
         textAlign: 'left',
+        borderRadius: 'var(--radius-sm)',
+        transition: 'all 120ms ease',
+        letterSpacing: '0.1px',
       }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
-      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+      onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'var(--bg-hover)' }}
+      onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = active ? 'var(--accent-bg)' : 'transparent' }}
     >
       {icon}
       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

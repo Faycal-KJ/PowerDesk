@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { useStore } from '../../stores/useStore'
 import { Eye, EyeOff } from 'lucide-react'
 
 export function ThumbnailBox({ src, fileName, size, containerHeight }: { src?: string | null; fileName: string; size: number | string; containerHeight?: number }) {
   const isNum = typeof size === 'number'
+  const [loaded, setLoaded] = useState(false)
   return (
     <div
       style={{
@@ -21,7 +23,8 @@ export function ThumbnailBox({ src, fileName, size, containerHeight }: { src?: s
         <img
           src={src}
           alt={fileName}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          onLoad={() => setLoaded(true)}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: loaded ? 1 : 0, transition: 'opacity 200ms ease' }}
         />
       ) : null}
     </div>

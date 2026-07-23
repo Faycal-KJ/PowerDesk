@@ -62,7 +62,7 @@ export default function BackgroundContextMenu() {
   return (
     <>
       <div style={{ position: "fixed", inset: 0, zIndex: 999 }} onClick={close} onContextMenu={(e) => { e.preventDefault(); close() }} />
-      <div ref={menuRef} className="floating-panel" style={{ position: "fixed", left: x, top: y, zIndex: 1000, background: "var(--bg-secondary)", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)", padding: "4px 0", minWidth: 180, boxShadow: "var(--shadow)", backdropFilter: "blur(12px)" }} onClick={(e) => e.stopPropagation()}>
+      <div ref={menuRef} className="floating-panel" style={{ position: "fixed", left: x, top: y, zIndex: 1000, background: "var(--surface-flyout)", border: "1px solid rgba(255, 255, 255, 0.05)", borderRadius: "var(--radius-lg)", padding: "8px 0", minWidth: 180, boxShadow: "0 2px 4px rgba(0,0,0,0.1), 0 8px 32px rgba(0,0,0,0.22)", backdropFilter: "blur(48px) saturate(150%)" }} onClick={(e) => e.stopPropagation()}>
 
         {creating && (
           <div style={{ padding: "4px 8px" }}>
@@ -82,9 +82,9 @@ export default function BackgroundContextMenu() {
                 style={{
                   flex: 1,
                   background: "var(--bg-primary)",
-                  border: "1px solid var(--accent)",
-                  borderRadius: "var(--radius-sm)",
-                  padding: "3px 6px",
+                  border: "1px solid rgba(255, 255, 255, 0.06)",
+                  borderRadius: "var(--radius-md)",
+                  padding: "5px 10px",
                   fontSize: 12,
                   color: "var(--text-primary)",
                   outline: "none",
@@ -93,11 +93,12 @@ export default function BackgroundContextMenu() {
               <button
                 onClick={handleCreate}
                 style={{
-                  padding: "3px 8px",
+                  padding: '5px 12px',
                   fontSize: 11,
-                  borderRadius: "var(--radius-sm)",
+                  borderRadius: "var(--radius-md)",
                   background: "var(--accent)",
                   color: "#fff",
+                  transition: "background 150ms ease",
                 }}
               >
                 Create
@@ -172,14 +173,17 @@ function MenuItem({ icon, label, danger, onClick }: { icon?: React.ReactElement;
       style={{
         display: "flex",
         alignItems: "center",
-        gap: 8,
+        gap: 12,
         width: "100%",
-        padding: "5px 12px",
+        padding: "8px 18px",
         fontSize: 12.5,
+        fontWeight: 400,
         color: danger ? "var(--danger)" : "var(--text-primary)",
         background: "transparent",
         textAlign: "left",
         cursor: onClick ? "pointer" : "default",
+        transition: "background 120ms ease",
+        letterSpacing: "0.1px",
       }}
       onMouseEnter={(e) => { if (onClick) e.currentTarget.style.background = "var(--bg-hover)" }}
       onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
@@ -190,5 +194,5 @@ function MenuItem({ icon, label, danger, onClick }: { icon?: React.ReactElement;
 }
 
 function Sep() {
-  return <div style={{ height: 1, background: "var(--border-subtle)", margin: "4px 0" }} />
+  return <div style={{ height: 1, background: "var(--border-subtle)", margin: "5px 0" }} />
 }

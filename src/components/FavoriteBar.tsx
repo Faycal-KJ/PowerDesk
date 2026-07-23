@@ -19,19 +19,24 @@ export default function FavoriteBar() {
 
   return (
     <div
+      className="floating-panel"
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: 2,
-        padding: '2px 8px',
-        background: 'var(--bg-secondary)',
-        borderBottom: '1px solid var(--border-color)',
+        gap: 6,
+        padding: '4px 14px',
+        background: 'rgba(30, 30, 30, 0.65)',
+        borderRadius: 'var(--radius-lg)',
+        margin: '0 6px 2px',
         overflow: 'auto',
-        minHeight: 28,
+        minHeight: 30,
         userSelect: 'none',
+        animation: 'fade-in 180ms ease',
+        position: 'relative',
+        zIndex: 2,
       }}
     >
-      <Star size={11} style={{ color: 'var(--accent)', flexShrink: 0, marginRight: 2 }} />
+      <Star size={11} style={{ color: 'var(--accent)', flexShrink: 0, marginRight: 6 }} />
       {favorites.length === 0 ? (
         <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
           Right-click a file or folder to add to favorites
@@ -63,15 +68,16 @@ export default function FavoriteBar() {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 3,
-                padding: '2px 8px',
-                borderRadius: 'var(--radius-sm)',
+                gap: 5,
+                padding: '4px 12px',
+                borderRadius: 'var(--radius-md)',
                 cursor: 'pointer',
                 fontSize: 11,
                 color: 'var(--text-secondary)',
                 background: hoveredIdx === idx ? 'var(--bg-hover)' : 'transparent',
+                border: hoveredIdx === idx ? '1px solid var(--border-card)' : '1px solid transparent',
                 flexShrink: 0,
-                transition: 'background 0.1s',
+                transition: 'all 150ms ease',
               }}
               title={fav.path}
             >
@@ -79,7 +85,7 @@ export default function FavoriteBar() {
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>{fav.name}</span>
               <button
                 onClick={(e) => { e.stopPropagation(); removeFavorite(fav.path) }}
-                style={{ display: 'flex', padding: 0, marginLeft: 1, color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', opacity: hoveredIdx === idx ? 1 : 0, transition: 'opacity 0.1s' }}
+                style={{ display: 'flex', padding: 0, marginLeft: 1, color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer', opacity: hoveredIdx === idx ? 1 : 0, transition: 'opacity 150ms ease' }}
                 title="Remove from favorites"
               >
                 <X size={10} />

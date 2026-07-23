@@ -2,6 +2,7 @@ import { ThumbnailBox, ThumbnailToggle, DragSelectOverlay } from './shared'
 import { getFileIcon, imageExts, thumbnailScale } from '../../lib/fileAreaUtils'
 import { getFileDecorations } from '../../plugins/ExtensionPoint'
 import BatchRenameDialog from '../BatchRenameDialog'
+import { useStore } from '../../stores/useStore'
 import type { ViewProps } from './ViewProps'
 
 interface GridViewProps extends ViewProps {
@@ -19,12 +20,13 @@ export default function GridView({
   onDragStart, onDragOver, onDragLeave, onDrop,
   setBatchRenameOpen, onBgContextMenu, onBatchDone, onBatchRename, onMouseDown,
 }: GridViewProps) {
-  const cellW = Math.max(iconSize + 40, 90)
-  const thumbSize = Math.min(iconSize * 2.5 * thumbnailScale, cellW - 8)
+  const gridItemSize = useStore((s) => s.ui.gridItemSize)
+  const cellW = Math.max((gridItemSize || iconSize) + 56, 110)
+  const thumbSize = Math.min((gridItemSize || iconSize) * 2.5 * thumbnailScale, cellW - 16)
 
   return (
     <div
-      style={{ flex: 1, overflow: 'auto', background: 'var(--bg-primary)', position: 'relative' }}
+      style={{ flex: 1, overflow: 'auto', background: 'var(--bg-mica)', position: 'relative' }}
       onMouseDown={onMouseDown}
       onContextMenu={(e) => {
         if (!(e.target as HTMLElement).closest('[data-file-item]') && !(e.target as HTMLElement).closest('[data-thumb-toggle]')) {
@@ -48,8 +50,8 @@ export default function GridView({
         style={{
           display: 'grid',
           gridTemplateColumns: `repeat(auto-fill, minmax(${cellW}px, 1fr))`,
-          gap: 4,
-          padding: 8,
+          gap: 12,
+          padding: 20,
           position: 'relative',
           userSelect: 'none',
         }}
@@ -86,16 +88,28 @@ export default function GridView({
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: 4,
-              padding: '8px 4px',
+              gap: 8,
+              padding: '14px 10px 12px',
               borderRadius: 'var(--radius-md)',
               cursor: 'pointer',
-              outline: isSelected ? `2px solid var(--accent)` : dragOverPath === file.path ? `2px solid var(--success)` : 'none',
-              outlineOffset: -1,
-              background: isSelected ? 'var(--accent-bg)' : dragOverPath === file.path ? 'rgba(46, 204, 113, 0.1)' : isHovered ? 'var(--bg-hover)' : 'transparent',
+              border: isSelected
+                ? '1px solid rgba(124, 92, 252, 0.3)'
+                : dragOverPath === file.path
+                  ? '1px solid rgba(46, 204, 113, 0.3)'
+                  : '1px solid transparent',
+              background: isSelected
+                ? 'var(--accent-bg)'
+                : dragOverPath === file.path
+                  ? 'rgba(46, 204, 113, 0.06)'
+                  : isHovered
+                    ? 'var(--bg-hover)'
+                    : 'transparent',
               textDecoration: deco.strikethrough ? 'line-through' : undefined,
               fontStyle: deco.fontStyle || undefined,
-              fontWeight: deco.fontWeight === 'bold' ? 700 : deco.fontWeight === 'lighter' ? 300 : undefined,
+              fontWeight: deco.fontWeight === 'bold' ? 600 : deco.fontWeight === 'lighter' ? 300 : undefined,
+              transition: 'all 120ms ease',
+              transform: isHovered && !isSelected ? 'translateY(-2px)' : 'none',
+              boxShadow: isHovered && !isSelected ? '0 4px 12px rgba(0,0,0,0.12)' : 'none',
             }}
           >
             {showThumbnails && imageExts.has(file.extension) ? (
@@ -103,10 +117,22 @@ export default function GridView({
             ) : (
               getFileIcon(file, iconSize)
             )}
-            <span style={{ fontSize: 11, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: cellW - 8, lineHeight: 1.3, wordBreak: 'break-all', color: deco.color || undefined }}>
+            <span style={{
+              fontSize: 11.5,
+              fontWeight: file.isDirectory ? 500 : 400,
+              textAlign: 'center',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: cellW - 12,
+              lineHeight: 1.3,
+              wordBreak: 'break-word',
+              color: deco.color || undefined,
+              padding: '0 2px',
+              letterSpacing: '0.1px',
+            }}>
               {file.name}
             </span>
-            {deco.badge && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 8, background: 'var(--accent-bg)', color: 'var(--accent)' }}>{deco.badge}</span>}
+            {deco.badge && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 20, background: 'var(--accent-bg)', color: 'var(--accent)' }}>{deco.badge}</span>}
             <TagBadgesInline tags={file.tags} />
           </div>
           )
@@ -122,7 +148,7 @@ function TagBadgesInline({ tags }: { tags?: string[] }) {
   return (
     <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center', maxWidth: '100%' }}>
       {tags.slice(0, 3).map((tag) => (
-        <span key={tag} style={{ fontSize: 9, padding: '1px 5px', borderRadius: 8, background: 'var(--accent-bg)', color: 'var(--accent)', border: '1px solid rgba(124, 92, 252, 0.25)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 80 }}>
+        <span key={tag} style={{ fontSize: 9, padding: '1px 6px', borderRadius: 20, background: 'var(--accent-bg)', color: 'var(--accent)', border: '1px solid rgba(124, 92, 252, 0.15)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 80 }}>
           {tag}
         </span>
       ))}

@@ -302,11 +302,11 @@ export default function SearchOverlay({ onClose, mode = 'search' }: { onClose: (
   const placeholder = isCommandMode ? 'Type a command...' : 'Search files, folders, extensions...'
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 2000, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '10vh', background: 'rgba(0,0,0,0.5)' }}
+    <div style={{ position: 'fixed', inset: 0, zIndex: 2000, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '10vh', background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div style={{ width: 560, maxWidth: '90vw', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-xl)', boxShadow: '0 4px 24px rgba(0,0,0,0.4)', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
+      <div style={{ width: 560, maxWidth: '90vw', background: 'var(--bg-secondary)', border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: 'var(--radius-xl)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), 0 16px 48px rgba(0,0,0,0.3)', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderBottom: '1px solid var(--border-color)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', borderBottom: '1px solid var(--border-color)' }}>
           {isCommandMode ? <Command size={15} style={{ color: 'var(--text-muted)', flexShrink: 0 }} /> : <Search size={15} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />}
           <input ref={inputRef} value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={handleKeyDown} placeholder={placeholder} style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: 13.5 }} />
           {query && <button onClick={() => setQuery('')} style={{ color: 'var(--text-muted)', display: 'flex', padding: 2 }}><X size={14} /></button>}
@@ -376,12 +376,12 @@ export default function SearchOverlay({ onClose, mode = 'search' }: { onClose: (
                 onChange={(e) => setSaveName(e.target.value)}
                 placeholder="Search name..."
                 onKeyDown={(e) => { if (e.key === 'Enter' && saveName.trim() && query) { addSavedSearch(saveName.trim(), query); setSaveName('') } }}
-                style={{ flex: 1, background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-sm)', padding: '3px 6px', fontSize: 11.5, color: 'var(--text-primary)', outline: 'none' }}
+                style={{ flex: 1, background: 'var(--bg-primary)', border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: 'var(--radius-md)', padding: '5px 10px', fontSize: 11.5, color: 'var(--text-primary)', outline: 'none' }}
               />
               <button
                 onClick={() => { if (saveName.trim() && (quickFilter || query)) { addSavedSearch(saveName.trim(), quickFilter || query); setSaveName('') } }}
                 disabled={!saveName.trim() || (!quickFilter && !query)}
-                style={{ padding: '3px 8px', fontSize: 11, borderRadius: 'var(--radius-sm)', background: saveName.trim() && (quickFilter || query) ? 'var(--accent)' : 'var(--bg-primary)', color: saveName.trim() && (quickFilter || query) ? '#fff' : 'var(--text-muted)', border: 'none', cursor: saveName.trim() && (quickFilter || query) ? 'pointer' : 'default' }}
+                style={{ padding: '5px 12px', fontSize: 11, borderRadius: 'var(--radius-md)', background: saveName.trim() && (quickFilter || query) ? 'var(--accent)' : 'var(--bg-primary)', color: saveName.trim() && (quickFilter || query) ? '#fff' : 'var(--text-muted)', border: 'none', cursor: saveName.trim() && (quickFilter || query) ? 'pointer' : 'default' }}
               >
                 Save
               </button>
@@ -600,8 +600,8 @@ export default function SearchOverlay({ onClose, mode = 'search' }: { onClose: (
                 style={{
                   fontSize: 11,
                   color: 'var(--accent)',
-                  padding: '2px 8px',
-                  borderRadius: 'var(--radius-sm)',
+                  padding: '4px 10px',
+                  borderRadius: 'var(--radius-md)',
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
                 onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
@@ -618,10 +618,10 @@ export default function SearchOverlay({ onClose, mode = 'search' }: { onClose: (
               {searching && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12.5 }}>Searching...</div>}
               {filteredCommands.map((cmd, i) => (
                 <div key={cmd.id} onClick={() => executeCommand(cmd)} onMouseEnter={() => setSelectedIdx(i)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px', cursor: 'pointer', background: i === selectedIdx ? 'var(--bg-hover)' : 'transparent' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', cursor: 'pointer', background: i === selectedIdx ? 'var(--bg-hover)' : 'transparent', animation: 'search-fade 150ms ease', animationDelay: `${Math.min(i * 15, 150)}ms`, animationFillMode: 'both' }}>
                   <div style={{ flexShrink: 0, color: 'var(--text-muted)' }}>{iconMap[cmd.icon] || <File size={14} />}</div>
-                  <span style={{ flex: 1, fontSize: 13, color: 'var(--text-primary)' }}>{cmd.label}</span>
-                  {cmd.keys && <span style={{ fontSize: 10.5, color: 'var(--text-muted)', fontFamily: 'monospace' }}>{cmd.keys}</span>}
+                  <span style={{ flex: 1, fontSize: 13, fontWeight: 400, color: 'var(--text-primary)' }}>{cmd.label}</span>
+                  {cmd.keys && <span style={{ fontSize: 10.5, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', letterSpacing: '0.3px' }}>{cmd.keys}</span>}
                 </div>
               ))}
             </>
@@ -631,7 +631,7 @@ export default function SearchOverlay({ onClose, mode = 'search' }: { onClose: (
               {!searching && query && results.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12.5 }}>No results for "{query}"</div>}
               {results.map((item, i) => (
                 <div key={item.path} onClick={() => openResult(item)} onMouseEnter={() => setSelectedIdx(i)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px', cursor: 'pointer', background: i === selectedIdx ? 'var(--bg-hover)' : 'transparent' }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', cursor: 'pointer', background: i === selectedIdx ? 'var(--bg-hover)' : 'transparent', animation: 'search-fade 150ms ease', animationDelay: `${Math.min(i * 15, 150)}ms`, animationFillMode: 'both' }}>
                   <div style={{ flexShrink: 0, color: item.isDirectory ? 'var(--accent)' : 'var(--text-muted)' }}>
                     {item.isDirectory ? <Folder size={16} /> : <File size={16} />}
                   </div>
@@ -674,9 +674,9 @@ const filterLabel: React.CSSProperties = {
 const filterInput: React.CSSProperties = {
   width: '100%',
   background: 'var(--bg-primary)',
-  border: '1px solid var(--border-color)',
-  borderRadius: 'var(--radius-sm)',
-  padding: '4px 6px',
+  border: '1px solid rgba(255, 255, 255, 0.06)',
+  borderRadius: 'var(--radius-md)',
+  padding: '5px 10px',
   fontSize: 11.5,
   color: 'var(--text-primary)',
   outline: 'none',
@@ -685,9 +685,9 @@ const filterInput: React.CSSProperties = {
 const filterSelect: React.CSSProperties = {
   width: '100%',
   background: 'var(--bg-primary)',
-  border: '1px solid var(--border-color)',
-  borderRadius: 'var(--radius-sm)',
-  padding: '4px 6px',
+  border: '1px solid rgba(255, 255, 255, 0.06)',
+  borderRadius: 'var(--radius-md)',
+  padding: '5px 10px',
   fontSize: 11.5,
   color: 'var(--text-primary)',
   outline: 'none',

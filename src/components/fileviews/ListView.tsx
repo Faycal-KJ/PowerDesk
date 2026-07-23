@@ -2,6 +2,7 @@ import { ThumbnailBox, ThumbnailToggle, DragSelectOverlay } from './shared'
 import { getFileIcon, formatSize, formatDate, imageExts, thumbnailScale } from '../../lib/fileAreaUtils'
 import { getFileDecorations } from '../../plugins/ExtensionPoint'
 import BatchRenameDialog from '../BatchRenameDialog'
+import { useStore } from '../../stores/useStore'
 import type { ViewProps } from './ViewProps'
 
 interface ListViewProps extends ViewProps {
@@ -19,13 +20,15 @@ export default function ListView({
   onDragStart, onDragOver, onDragLeave, onDrop,
   setBatchRenameOpen, onBgContextMenu, onBatchDone, onBatchRename, onMouseDown,
 }: ListViewProps) {
+  const listDensity = useStore((s) => s.ui.listDensity)
+  const densityMult = listDensity === 'compact' ? 0.75 : listDensity === 'spacious' ? 1.25 : 1
   const s = Math.min(Math.max(iconSize / 24, 0.8), 2.5)
   const nameFs = Math.round(12 * s)
   const metaFs = Math.round(11 * s)
-  const tagFs = Math.round(9 * s)
-  const padV = Math.round(3 * s)
-  const padH = Math.round(4 * s)
-  const iconCol = Math.round(iconSize + 12)
+  const tagFs = Math.round(9.5 * s)
+  const padV = Math.round(6.5 * s * densityMult)
+  const padH = Math.round(9 * s * densityMult)
+  const iconCol = Math.round(iconSize + 14)
   const iconRender = Math.round(iconSize * 0.85)
   const thumbRender = Math.min(iconRender, 200) * thumbnailScale
   const headerFs = Math.round(10.5 * s)
@@ -41,7 +44,7 @@ export default function ListView({
           onBgContextMenu(e.clientX, e.clientY)
         }
       }}
-      style={{ flex: 1, overflow: 'auto', background: 'var(--bg-primary)', position: 'relative', userSelect: 'none' }}
+      style={{ flex: 1, overflow: 'auto', background: 'var(--bg-mica)', position: 'relative', userSelect: 'none' }}
     >
       <ThumbnailToggle selectedCount={selectedPaths.size} onBatchRename={() => setBatchRenameOpen(true)} />
       {batchRenameOpen && selectedPaths.size > 0 && (
@@ -59,19 +62,20 @@ export default function ListView({
               fontSize: headerFs,
               color: 'var(--text-muted)',
               textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              fontWeight: 600,
+              letterSpacing: '0.6px',
+              fontWeight: 500,
               position: 'sticky',
               top: 0,
-              background: 'var(--bg-primary)',
+              background: 'var(--bg-mica)',
               zIndex: 1,
+              borderBottom: '1px solid var(--border-subtle)',
             }}
           >
-            <th style={{ width: iconCol, padding: `${padV}px ${padH}px`, textAlign: 'left' }} />
-            <th style={{ padding: `${padV}px ${padH}px`, textAlign: 'left' }}>Name</th>
-            <th style={{ width: Math.round(90 * s), padding: `${padV}px ${padH}px`, textAlign: 'right' }}>Size</th>
-            <th style={{ width: Math.round(130 * s), padding: `${padV}px ${padH}px`, textAlign: 'right' }}>Date Modified</th>
-            <th style={{ width: Math.round(150 * s), padding: `${padV}px ${padH}px`, textAlign: 'left' }}>Tags</th>
+            <th style={{ width: iconCol, padding: `${padV + 2}px ${padH}px`, textAlign: 'left' }} />
+            <th style={{ padding: `${padV + 2}px ${padH}px`, textAlign: 'left' }}>Name</th>
+            <th style={{ width: Math.round(90 * s), padding: `${padV + 2}px ${padH}px`, textAlign: 'right' }}>Size</th>
+            <th style={{ width: Math.round(130 * s), padding: `${padV + 2}px ${padH}px`, textAlign: 'right' }}>Date Modified</th>
+            <th style={{ width: Math.round(150 * s), padding: `${padV + 2}px ${padH}px`, textAlign: 'left' }}>Tags</th>
           </tr>
         </thead>
         <tbody>
@@ -95,7 +99,20 @@ export default function ListView({
               onDragLeave={onDragLeave}
               onDrop={(e) => onDrop(file, e)}
               title={deco.tooltip || undefined}
-              style={{ cursor: 'pointer', background: isSelected ? 'var(--accent-bg)' : dragOverPath === file.path ? 'rgba(46, 204, 113, 0.1)' : isHovered ? 'var(--bg-hover)' : 'transparent', textDecoration: deco.strikethrough ? 'line-through' : undefined, fontStyle: deco.fontStyle || undefined }}
+              style={{
+                cursor: 'pointer',
+                background: isSelected
+                  ? 'var(--accent-bg)'
+                  : dragOverPath === file.path
+                    ? 'rgba(46, 204, 113, 0.06)'
+                    : isHovered
+                      ? 'var(--bg-hover)'
+                      : 'transparent',
+                textDecoration: deco.strikethrough ? 'line-through' : undefined,
+                fontStyle: deco.fontStyle || undefined,
+                transition: 'background 120ms ease',
+                borderLeft: isHovered && !isSelected ? '2px solid var(--accent)' : '2px solid transparent',
+              }}
             >
               <td style={{ padding: `${padV}px ${padH}px`, textAlign: 'center', width: iconCol }}>
                 {showThumbnails && imageExts.has(file.extension) ? (
@@ -104,9 +121,9 @@ export default function ListView({
                   getFileIcon(file, iconRender)
                 )}
               </td>
-              <td style={{ padding: `${padV}px ${padH}px`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: file.isDirectory ? 500 : deco.fontWeight === 'bold' ? 700 : 400, fontSize: nameFs, color: deco.color || undefined }}>
+              <td style={{ padding: `${padV}px ${padH}px`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: file.isDirectory ? 500 : deco.fontWeight === 'bold' ? 600 : 400, fontSize: nameFs, color: deco.color || undefined, letterSpacing: '0.1px' }}>
                 {file.name}
-                {deco.badge && <span style={{ fontSize: 9, padding: '1px 5px', borderRadius: 8, background: 'var(--accent-bg)', color: 'var(--accent)', marginLeft: 6 }}>{deco.badge}</span>}
+                {deco.badge && <span style={{ fontSize: 9, padding: '1px 6px', borderRadius: 20, background: 'var(--accent-bg)', color: 'var(--accent)', marginLeft: 6 }}>{deco.badge}</span>}
               </td>
               <td style={{ padding: `${padV}px ${padH}px`, textAlign: 'right', color: 'var(--text-secondary)', fontSize: metaFs, whiteSpace: 'nowrap' }}>
                 {file.isDirectory ? (folderSizes[file.path] != null ? formatSize(folderSizes[file.path]) : '—') : formatSize(file.size)}
@@ -119,7 +136,7 @@ export default function ListView({
                   {file.tags && file.tags.length > 0 ? file.tags.slice(0, 2).map((tag) => (
                     <span
                       key={tag}
-                      style={{ fontSize: tagFs, padding: `0px ${Math.round(4 * s)}px`, borderRadius: 8, background: 'var(--accent-bg)', color: 'var(--accent)', border: '1px solid rgba(124, 92, 252, 0.25)', whiteSpace: 'nowrap' }}
+                      style={{ fontSize: tagFs, padding: `1px ${Math.round(5 * s)}px`, borderRadius: 20, background: 'var(--accent-bg)', color: 'var(--accent)', border: '1px solid rgba(124, 92, 252, 0.15)', whiteSpace: 'nowrap' }}
                     >
                       {tag}
                     </span>

@@ -353,7 +353,9 @@ export default function FileArea({ pane, tabId }: { pane?: 'left' | 'right' | 's
     onMouseDown: handleMouseDown,
   }
 
-  if (viewMode === 'grid') return <GridView {...sharedProps} />
-  if (viewMode === 'gallery') return <GalleryView {...sharedProps} />
-  return <ListView {...sharedProps} />
+  const animStyle: React.CSSProperties = { animation: 'file-enter 200ms ease', display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }
+
+  if (viewMode === 'grid') return <div key={tab?.path} style={animStyle}><GridView {...sharedProps} /></div>
+  if (viewMode === 'gallery') return <div key={tab?.path} style={animStyle}><GalleryView {...sharedProps} /></div>
+  return <div key={tab?.path} style={animStyle}><ListView {...sharedProps} /></div>
 }

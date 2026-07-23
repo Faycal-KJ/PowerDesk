@@ -114,13 +114,13 @@ export default function FolderAnalysis() {
 
   return (
     <>
-      <div style={{ position: 'fixed', inset: 0, zIndex: 1500, background: 'rgba(0,0,0,0.5)' }} onClick={() => { setOpen(false); setData(null) }} />
+      <div style={{ position: 'fixed', inset: 0, zIndex: 1500, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }} onClick={() => { setOpen(false); setData(null) }} />
       <div
         className="floating-panel"
         style={{
           position: 'fixed', inset: 40, zIndex: 1501,
-          background: 'var(--bg-primary)', border: '1px solid var(--border-color)',
-          borderRadius: 'var(--radius-lg)', boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+          background: 'var(--bg-primary)', border: '1px solid rgba(255, 255, 255, 0.06)',
+          borderRadius: 'var(--radius-lg)', boxShadow: '0 4px 8px rgba(0,0,0,0.15), 0 16px 48px rgba(0,0,0,0.3)',
           display: 'flex', flexDirection: 'column', overflow: 'hidden',
         }}
       >
