@@ -1,7 +1,9 @@
 import { useStore } from '../stores/useStore'
+import { t } from '../i18n/translations'
 import { ArrowDownToLine, Clock, Clipboard, Layers, History, Bookmark, Link } from 'lucide-react'
 
 export default function StatusBar() {
+  const _lang = useStore((s) => s.ui.language)
   const files = useStore((s) => s.files)
   const searchQuery = useStore((s) => s.searchQuery)
   const activeTab = useStore((s) => s.tabs.find((t) => t.id === s.activeTabId))
@@ -54,18 +56,18 @@ export default function StatusBar() {
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
         {loading ? (
-          <span style={{ color: 'var(--text-muted)' }}>Loading...</span>
+          <span style={{ color: 'var(--text-muted)' }}>{t('loading')}</span>
         ) : activeTab?.path ? (
           <>
-            <span style={{ fontWeight: 500 }}>{files.length} items</span>
-            <span style={{ opacity: 0.5, letterSpacing: '0.1px' }}>{dirs} folders, {fileCount} files</span>
+            <span style={{ fontWeight: 500 }}>{files.length} {t('items')}</span>
+            <span style={{ opacity: 0.5, letterSpacing: '0.1px' }}>{dirs} {t('folders')}, {fileCount} {t('files')}</span>
           </>
         ) : (
-          <span>No folder open</span>
+          <span>{t('noFolderOpen')}</span>
         )}
-        {searchQuery && <span style={{ color: 'var(--accent)', fontWeight: 500 }}>Filtering: &ldquo;{searchQuery}&rdquo;</span>}
-        {activeTagFilter && <span style={{ color: 'var(--accent)', fontWeight: 500 }}>Tag: {activeTagFilter}</span>}
-        {activeTab?.dualPane && <span style={{ color: 'var(--accent)', fontWeight: 500 }}>Dual Pane</span>}
+        {searchQuery && <span style={{ color: 'var(--accent)', fontWeight: 500 }}>{t('filtering') + ':'} &ldquo;{searchQuery}&rdquo;</span>}
+        {activeTagFilter && <span style={{ color: 'var(--accent)', fontWeight: 500 }}>{t('tag') + ':'} {activeTagFilter}</span>}
+        {activeTab?.dualPane && <span style={{ color: 'var(--accent)', fontWeight: 500 }}>{t('dualPane')}</span>}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <StatusBtn
@@ -117,10 +119,10 @@ export default function StatusBar() {
           onClick={() => setSyncEnabled(!syncEnabled)}
           active={syncEnabled}
           hasContent={false}
-          title={syncEnabled ? 'Sync enabled — other windows match this one' : 'Enable multi-window sync (Ctrl+Shift+S)'}
+          title={syncEnabled ? t('syncEnabled') : t('enableSync')}
         >
           <Link size={10} />
-          {syncEnabled && <span>Sync</span>}
+          {syncEnabled && <span>{t('sync')}</span>}
         </StatusBtn>
         <StatusBtn
           onClick={() => setTransferOpen(!transferOpen)}

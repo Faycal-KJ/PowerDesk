@@ -1,4 +1,5 @@
 import { getApi } from '../../lib/api'
+import type { Language } from '../../i18n/index'
 
 export type UiSettings = {
   opacity: number
@@ -31,6 +32,7 @@ export type UiSettings = {
   tabStyle: 'pill' | 'underline' | 'minimal'
   showFavoriteBar: boolean
   showStatusBar: boolean
+  language: Language
 }
 
 export const DEFAULT_UI: UiSettings = {
@@ -44,6 +46,7 @@ export const DEFAULT_UI: UiSettings = {
   accentPalette: ['#7c5cfc', '#3b82f6', '#22c55e', '#f97316', '#f43f5e', '#06b6d4', '#eab308', '#8b5cf6'],
   gridItemSize: 32, listDensity: 'comfortable', animationSpeed: 'normal',
   sidebarDefaultWidth: 220, tabStyle: 'underline', showFavoriteBar: true, showStatusBar: true,
+  language: 'en',
 }
 
 const RADIUS_MAP = { sharp: '4px', round: '10px', pill: '20px' }
@@ -97,6 +100,11 @@ export function applyUiSettings(ui?: UiSettings) {
   const u = ui || (_getUi ? _getUi() : null)
   if (!u) return
   const r = document.documentElement
+
+  // Apply language
+  if (u.language) {
+    import('../../i18n/translations').then(({ setLanguage }) => setLanguage(u.language))
+  }
 
   // Theme switching — smooth transition
   if (ui) {

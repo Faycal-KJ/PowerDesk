@@ -4,6 +4,8 @@ import { X, Settings as SettingsIcon, Folder, Monitor, Info, Palette, Sliders, R
 import type { UiSettings } from '../stores/useStore'
 import { pluginManager } from '../plugins/pluginManager'
 import { getApi } from '../lib/api'
+import { LANGUAGES, type Language } from '../i18n/index'
+import { t, setLanguage } from '../i18n/translations'
 
 const PRESET_THEMES = [
   { name: 'Monochrome', accent: '#999999', bg: '#111111', bg2: '#1e1e1e', bg3: '#2a2a2a', text: '#e0e0e0', text2: '#888888', sidebar: '#191919' },
@@ -135,9 +137,26 @@ export default function SettingsPanel() {
               <Section icon={<Info size={14} />} title="About">
                 <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                   <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>PowerDesk v0.1.0</div>
-                  <div>The operating system you wish Windows came with.</div>
-                  <div style={{ marginTop: 8, color: 'var(--text-muted)' }}>Built with Electron + React + TypeScript + Vite</div>
+                  <div>{t('theOS')}</div>
+                  <div style={{ marginTop: 8, color: 'var(--text-muted)' }}>{t('builtWith')}</div>
                 </div>
+              </Section>
+              <Section icon={<Palette size={14} />} title={t('language')}>
+                <Row label={t('language')}>
+                  <select
+                    value={ui.language || 'en'}
+                    onChange={(e) => {
+                      const lang = e.target.value as Language
+                      setLanguage(lang)
+                      setUi({ language: lang })
+                    }}
+                    style={{ ...inputStyle, width: 220 }}
+                  >
+                    {LANGUAGES.map((l) => (
+                      <option key={l.code} value={l.code}>{l.label}</option>
+                    ))}
+                  </select>
+                </Row>
               </Section>
               <Section icon={<Info size={14} />} title="Keyboard Shortcuts">
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 16px', fontSize: 11, color: 'var(--text-secondary)' }}>

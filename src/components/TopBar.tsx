@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useStore } from '../stores/useStore'
+import { t } from '../i18n/translations'
 import TabBar from './TabBar'
 import {
   ArrowLeft,
@@ -20,21 +21,8 @@ import {
   ChevronDown,
 } from 'lucide-react'
 
-const viewModes = [
-  { mode: 'grid' as const, icon: <LayoutGrid size={14} />, label: 'Grid' },
-  { mode: 'list' as const, icon: <List size={14} />, label: 'List' },
-  { mode: 'gallery' as const, icon: <Image size={14} />, label: 'Gallery' },
-]
-
-const sortOptions: { value: string; label: string }[] = [
-  { value: 'name', label: 'Name' },
-  { value: 'date', label: 'Date Modified' },
-  { value: 'size', label: 'Size' },
-  { value: 'type', label: 'Type' },
-  { value: 'tags', label: 'Tags' },
-]
-
 export default function TopBar() {
+  const _lang = useStore((s) => s.ui.language)
   const activeTabId = useStore((s) => s.activeTabId)
   const tabs = useStore((s) => s.tabs)
   const activeTab = tabs.find((t) => t.id === activeTabId)
@@ -56,6 +44,20 @@ export default function TopBar() {
   const setSortBy = useStore((s) => s.setSortBy)
   const sortDirection = useStore((s) => s.sortDirection)
   const setSortDirection = useStore((s) => s.setSortDirection)
+
+  const viewModes = [
+    { mode: 'grid' as const, icon: <LayoutGrid size={14} />, labelKey: 'grid' },
+    { mode: 'list' as const, icon: <List size={14} />, labelKey: 'list' },
+    { mode: 'gallery' as const, icon: <Image size={14} />, labelKey: 'gallery' },
+  ]
+
+  const sortOptions: { value: string; labelKey: string }[] = [
+    { value: 'name', labelKey: 'sortName' },
+    { value: 'date', labelKey: 'sortDateModified' },
+    { value: 'size', labelKey: 'sortSize' },
+    { value: 'type', labelKey: 'sortType' },
+    { value: 'tags', labelKey: 'sortTags' },
+  ]
 
   const [pathEditing, setPathEditing] = useState(false)
   const [pathDraft, setPathDraft] = useState('')
@@ -127,20 +129,20 @@ export default function TopBar() {
         onMouseLeave={(e) => {
           if (!sidebarOpen) e.currentTarget.style.background = 'var(--bg-tertiary)'
         }}
-        title="Toggle Sidebar"
+        title={t('toggleSidebar')}
       >
         <PanelLeft size={15} />
       </button>
 
       {/* Navigation */}
       <div style={{ display: 'flex', gap: 2 }}>
-        <IconBtn onClick={() => targetTabId && navigateBack(targetTabId)} disabled={!canGoBack} title="Back">
+        <IconBtn onClick={() => targetTabId && navigateBack(targetTabId)} disabled={!canGoBack} title={t('back')}>
           <ArrowLeft size={15} />
         </IconBtn>
-        <IconBtn onClick={() => targetTabId && navigateForward(targetTabId)} disabled={!canGoForward} title="Forward">
+        <IconBtn onClick={() => targetTabId && navigateForward(targetTabId)} disabled={!canGoForward} title={t('forward')}>
           <ArrowRight size={15} />
         </IconBtn>
-        <IconBtn onClick={refresh} title="Refresh">
+        <IconBtn onClick={refresh} title={t('refresh')}>
           <RotateCw size={15} />
         </IconBtn>
       </div>
@@ -173,7 +175,7 @@ export default function TopBar() {
               if (e.key === 'Escape') setPathEditing(false)
             }}
             onBlur={() => setPathEditing(false)}
-            placeholder="Enter path..."
+            placeholder={t('enterPath')}
             style={{
               flex: 1,
               background: 'transparent',
@@ -199,7 +201,7 @@ export default function TopBar() {
             onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)' }}
             onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-secondary)' }}
           >
-            {targetTab?.path || 'No folder open'}
+            {targetTab?.path || t('noFolderOpen')}
           </span>
         )}
       </div>
@@ -219,7 +221,7 @@ export default function TopBar() {
         <input
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Filter..."
+          placeholder={t('filter')}
           style={{
             flex: 1,
             background: 'transparent',
@@ -263,7 +265,7 @@ export default function TopBar() {
               background: targetTab?.viewMode === vm.mode ? 'var(--bg-active)' : 'transparent',
               transition: 'all 150ms ease',
             }}
-            title={vm.label}
+            title={t(vm.labelKey)}
           >
             {vm.icon}
           </button>
@@ -290,10 +292,10 @@ export default function TopBar() {
             backgroundPosition: 'right 6px center',
             transition: 'background 150ms ease',
           }}
-          title="Sort by"
+          title={t('sortBy')}
         >
           {sortOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <option key={opt.value} value={opt.value}>{t(opt.labelKey)}</option>
           ))}
         </select>
         <button
@@ -310,7 +312,7 @@ export default function TopBar() {
           }}
           onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
           onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
-          title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+          title={sortDirection === 'asc' ? t('ascending') : t('descending')}
         >
           <ArrowUpDown size={11} />
           {sortDirection === 'asc' ? <ChevronUp size={9} /> : <ChevronDown size={9} />}
@@ -320,7 +322,7 @@ export default function TopBar() {
       {/* Icon size slider */}
       <div
         style={{ ...pillStyle, padding: '3px 6px', gap: 4 }}
-        title={`Icon size: ${iconSize}px`}
+        title={`${t('iconSize')}: ${iconSize}px`}
       >
         <Minus size={10} style={{ color: 'var(--text-muted)' }} />
         <input
@@ -354,7 +356,7 @@ export default function TopBar() {
             }
           }}
           active={!!targetTab?.dualPane}
-          title="Dual Pane"
+          title={t('dualPane')}
         >
           <PanelRight size={14} />
         </IconBtn>
@@ -376,7 +378,7 @@ export default function TopBar() {
               backdropFilter: 'blur(48px) saturate(150%)',
               animation: 'scale-in 150ms cubic-bezier(0.33, 0, 0.67, 1)',
             }}>
-              <div style={{ padding: '6px 14px', fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Pair with</div>
+              <div style={{ padding: '6px 14px', fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('pairWith')}</div>
               {tabs.filter((t) => t.id !== activeTabId).map((t) => (
                 <button key={t.id} onClick={() => {
                   useStore.getState().setDualPaneTab(activeTabId, t.id)
@@ -393,7 +395,7 @@ export default function TopBar() {
           </>
         )}
       </div>
-      <IconBtn onClick={() => setSettingsOpen(true)} title="Settings">
+      <IconBtn onClick={() => setSettingsOpen(true)} title={t('settings')}>
         <Settings size={14} />
       </IconBtn>
       </div>

@@ -1,8 +1,10 @@
 import { useStore } from '../stores/useStore'
 import { X, Pin, Plus, Copy, Columns } from 'lucide-react'
 import { useState, useRef } from 'react'
+import { t } from '../i18n/translations'
 
 export default function TabBar({ embedded }: { embedded?: boolean }) {
+  const _lang = useStore((s) => s.ui.language)
   const tabs = useStore((s) => s.tabs)
   const activeTabId = useStore((s) => s.activeTabId)
   const setActiveTab = useStore((s) => s.setActiveTab)
@@ -139,7 +141,7 @@ export default function TabBar({ embedded }: { embedded?: boolean }) {
           e.currentTarget.style.color = 'var(--text-muted)'
           e.currentTarget.style.background = 'transparent'
         }}
-        title="New Tab"
+        title={t('newTab')}
       >
         <Plus size={14} />
       </button>
@@ -168,13 +170,13 @@ export default function TabBar({ embedded }: { embedded?: boolean }) {
           animation: 'scale-in 150ms cubic-bezier(0.33, 0, 0.67, 1)',
         }}
       >
-        <MenuItem icon={<Pin size={13} />} label="Pin Tab" onClick={() => { pinTab(contextTab); closeContextMenu() }} />
-        <MenuItem icon={<Copy size={13} />} label="Duplicate Tab" onClick={() => { duplicateTab(contextTab); closeContextMenu() }} />
-        <MenuItem icon={<Columns size={13} />} label="Split Tab" onClick={() => { toggleDualPane(contextTab); closeContextMenu() }} />
+        <MenuItem icon={<Pin size={13} />} label={t('pinTab')} onClick={() => { pinTab(contextTab); closeContextMenu() }} />
+        <MenuItem icon={<Copy size={13} />} label={t('duplicateTab')} onClick={() => { duplicateTab(contextTab); closeContextMenu() }} />
+        <MenuItem icon={<Columns size={13} />} label={t('splitTab')} onClick={() => { toggleDualPane(contextTab); closeContextMenu() }} />
         <Sep />
         <MenuItem
           icon={<X size={13} />}
-          label="Close Tab"
+          label={t('closeTab')}
           onClick={() => { closeTab(contextTab); closeContextMenu() }}
           danger
         />

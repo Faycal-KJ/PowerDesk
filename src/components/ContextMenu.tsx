@@ -1,22 +1,24 @@
 import { useState, useRef, useLayoutEffect } from "react"
 import { useStore } from "../stores/useStore"
 import { getApi } from '../lib/api'
+import { t } from '../i18n/translations'
 import {
   File, Copy, Clipboard, Pencil, Trash2, Scissors, Palette, Star, Tag, X, Share2, Bot, Workflow, FolderSearch, Bookmark
 } from "lucide-react"
 import { PluginContextMenuItems } from '../plugins/ExtensionPoint'
 
 const COLORS = [
-  { label: "None", value: undefined as string | undefined, color: "var(--text-muted)" },
-  { label: "Red", value: "#e74c3c", color: "#e74c3c" },
-  { label: "Orange", value: "#e67e22", color: "#e67e22" },
-  { label: "Yellow", value: "#f1c40f", color: "#f1c40f" },
-  { label: "Green", value: "#2ecc71", color: "#2ecc71" },
-  { label: "Blue", value: "#3498db", color: "#3498db" },
-  { label: "Purple", value: "#9b59b6", color: "#9b59b6" },
+  { labelKey: 'colorNone', value: undefined as string | undefined, color: "var(--text-muted)" },
+  { labelKey: 'colorRed', value: "#e74c3c", color: "#e74c3c" },
+  { labelKey: 'colorOrange', value: "#e67e22", color: "#e67e22" },
+  { labelKey: 'colorYellow', value: "#f1c40f", color: "#f1c40f" },
+  { labelKey: 'colorGreen', value: "#2ecc71", color: "#2ecc71" },
+  { labelKey: 'colorBlue', value: "#3498db", color: "#3498db" },
+  { labelKey: 'colorPurple', value: "#9b59b6", color: "#9b59b6" },
 ]
 
 export default function ContextMenu() {
+  const _lang = useStore((s) => s.ui.language)
   const contextTarget = useStore((s) => s.contextTarget)
   const setContextTarget = useStore((s) => s.setContextTarget)
   const setClipboard = useStore((s) => s.setClipboard)
@@ -122,39 +124,39 @@ export default function ContextMenu() {
           </div>
         ) : null}
 
-        <MenuItem icon={<File size={13} />} label="Open" onClick={() => {
+        <MenuItem icon={<File size={13} />} label={t('open')} onClick={() => {
           if (isDir) { navigateTo(item.path); close() }
           else { setPreviewFile(item); close() }
         }} />
 
         <Sep />
 
-        <MenuItem icon={<Copy size={13} />} label={selectedPathsForContext.length > 1 ? `Copy (${selectedPathsForContext.length})` : "Copy"} onClick={() => { setClipboard(selectedPathsForContext.length > 0 ? selectedPathsForContext : [item.path], "copy"); close() }} />
-        <MenuItem icon={<Scissors size={13} />} label={selectedPathsForContext.length > 1 ? `Cut (${selectedPathsForContext.length})` : "Cut"} onClick={() => { setClipboard(selectedPathsForContext.length > 0 ? selectedPathsForContext : [item.path], "cut"); close() }} />
+        <MenuItem icon={<Copy size={13} />} label={selectedPathsForContext.length > 1 ? `${t('copy')} (${selectedPathsForContext.length})` : t('copy')} onClick={() => { setClipboard(selectedPathsForContext.length > 0 ? selectedPathsForContext : [item.path], "copy"); close() }} />
+        <MenuItem icon={<Scissors size={13} />} label={selectedPathsForContext.length > 1 ? `${t('cut')} (${selectedPathsForContext.length})` : t('cut')} onClick={() => { setClipboard(selectedPathsForContext.length > 0 ? selectedPathsForContext : [item.path], "cut"); close() }} />
         {clipboardItems.length > 0 && (
-          <MenuItem icon={<Clipboard size={13} />} label="Paste here" onClick={() => { pasteClipboard(isDir ? item.path : parentDir); close() }} />
+          <MenuItem icon={<Clipboard size={13} />} label={t('pasteHere')} onClick={() => { pasteClipboard(isDir ? item.path : parentDir); close() }} />
         )}
-        <MenuItem icon={<Pencil size={13} />} label="Rename" onClick={handleRename} />
-        <MenuItem icon={<Trash2 size={13} />} label="Delete" danger onClick={async () => { await deleteFile(item.path); close() }} />
+        <MenuItem icon={<Pencil size={13} />} label={t('rename')} onClick={handleRename} />
+        <MenuItem icon={<Trash2 size={13} />} label={t('delete')} danger onClick={async () => { await deleteFile(item.path); close() }} />
 
         <Sep />
 
         {isDir && (
           <>
             <div style={{ position: "relative" }}>
-              <MenuItem icon={<Palette size={13} />} label="Color Label" onClick={() => setShowColors(!showColors)} />
+              <MenuItem icon={<Palette size={13} />} label={t('colorLabel')} onClick={() => setShowColors(!showColors)} />
               {showColors && (
                 <div style={{ position: "absolute", left: "100%", top: 0, marginLeft: 6, background: "var(--surface-flyout)", border: "1px solid rgba(255, 255, 255, 0.05)", borderRadius: "var(--radius-lg)", padding: "6px", boxShadow: "0 2px 4px rgba(0,0,0,0.1), 0 8px 32px rgba(0,0,0,0.22)", zIndex: 1001, minWidth: 130, backdropFilter: "blur(48px) saturate(150%)" }}>
                   {COLORS.map((c) => (
-                    <button key={c.label} onClick={async () => { await setColor(parentDir, item.name, c.value); close() }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "6px 10px", fontSize: 12, borderRadius: "var(--radius-sm)", color: "var(--text-primary)", background: item.color === c.value ? "var(--bg-active)" : "transparent", transition: "background 120ms ease" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={(e) => { if (item.color !== c.value) e.currentTarget.style.background = "transparent" }}>
+                    <button key={c.labelKey} onClick={async () => { await setColor(parentDir, item.name, c.value); close() }} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "6px 10px", fontSize: 12, borderRadius: "var(--radius-sm)", color: "var(--text-primary)", background: item.color === c.value ? "var(--bg-active)" : "transparent", transition: "background 120ms ease" }} onMouseEnter={(e) => e.currentTarget.style.background = "var(--bg-hover)"} onMouseLeave={(e) => { if (item.color !== c.value) e.currentTarget.style.background = "transparent" }}>
                       <span style={{ width: 10, height: 10, borderRadius: "50%", background: c.color || "transparent", border: c.value ? "none" : "1px solid var(--text-muted)" }} />
-                      {c.label}
+                      {t(c.labelKey)}
                     </button>
                   ))}
                 </div>
               )}
             </div>
-            <MenuItem icon={<Star size={13} />} label={isFavorited ? "Remove Favorite" : "Add to Favorites"} onClick={toggleFavorite} />
+            <MenuItem icon={<Star size={13} />} label={isFavorited ? t('removeFavorite') : t('addToFavorites')} onClick={toggleFavorite} />
           </>
         )}
 
@@ -162,13 +164,13 @@ export default function ContextMenu() {
           <>
             <Sep />
             <div style={{ position: "relative" }}>
-              <MenuItem icon={<Tag size={13} />} label={selectedPathsForContext.length > 1 ? `Manage Tags (${selectedPathsForContext.length})` : "Manage Tags"} onClick={() => setShowTags(!showTags)} />
+              <MenuItem icon={<Tag size={13} />} label={selectedPathsForContext.length > 1 ? `${t('manageTags')} (${selectedPathsForContext.length})` : t('manageTags')} onClick={() => setShowTags(!showTags)} />
               {showTags && (
                 <div style={{ position: "absolute", left: "100%", top: 0, marginLeft: 6, background: "var(--surface-flyout)", border: "1px solid rgba(255, 255, 255, 0.05)", borderRadius: "var(--radius-lg)", padding: "10px", boxShadow: "0 2px 4px rgba(0,0,0,0.1), 0 8px 32px rgba(0,0,0,0.22)", zIndex: 1001, minWidth: 210, backdropFilter: "blur(48px) saturate(150%)" }}>
                   <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 8 }}>
                     {selectedPathsForContext.length > 1
-                      ? `Tags for ${selectedPathsForContext.length} files`
-                      : `Tags for this file`}
+                      ? `${t('tagsFor')} ${selectedPathsForContext.length} ${t('files')}`
+                      : t('tagsForThisFile')}
                   </div>
                   {item.tags && item.tags.length > 0 && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 10 }}>
@@ -227,7 +229,7 @@ export default function ContextMenu() {
                           setNewTagValue("")
                         }
                       }}
-                      placeholder="Add tag..."
+                      placeholder={t('addTagPlaceholder')}
                       style={{
                         flex: 1,
                         background: "var(--bg-tertiary)",
@@ -261,7 +263,7 @@ export default function ContextMenu() {
                         transition: "background 150ms ease",
                       }}
                     >
-                      Add
+                      {t('add')}
                     </button>
                   </div>
                 </div>
@@ -273,7 +275,7 @@ export default function ContextMenu() {
         <Sep />
         <MenuItem
           icon={<File size={13} />}
-          label="Compress to ZIP"
+          label={t('compressToZip')}
           onClick={async () => {
             const api = getApi()
             if (!api) return
@@ -287,7 +289,7 @@ export default function ContextMenu() {
         />
         <MenuItem
           icon={<Bookmark size={13} />}
-          label="Bookmark This File"
+          label={t('bookmarkThisFile')}
           onClick={() => {
             addFolderBookmark(item.path, 'file')
             close()
@@ -295,7 +297,7 @@ export default function ContextMenu() {
         />
         <MenuItem
           icon={<Share2 size={13} />}
-          label="Share (Copy Path)"
+          label={t('shareCopyPath')}
           onClick={() => {
             const paths = selectedPathsForContext?.length ? selectedPathsForContext : (item ? [item] : [])
             if (paths.length) {
@@ -307,7 +309,7 @@ export default function ContextMenu() {
         {isDir && (
           <MenuItem
             icon={<FolderSearch size={13} />}
-            label="Analyze Folder"
+            label={t('analyzeFolder')}
             onClick={() => {
               useStore.getState().openFolderAnalysis(item!.path)
               close()
@@ -317,19 +319,19 @@ export default function ContextMenu() {
         <Sep />
         <MenuItem
           icon={<Bot size={13} />}
-          label="Run AI Action"
+          label={t('runAIAction')}
           muted
         />
         <MenuItem
           icon={<Workflow size={13} />}
-          label="Automation"
+          label={t('automation')}
           muted
         />
         <PluginContextMenuItems onAction={close} />
         <Sep />
         <MenuItem
           icon={<File size={13} />}
-          label="Properties"
+          label={t('properties')}
           onClick={() => {
             setPropertiesFile(item)
             close()

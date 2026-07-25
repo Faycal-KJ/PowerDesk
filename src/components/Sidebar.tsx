@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useStore } from '../stores/useStore'
 import { getApi } from '../lib/api'
 import { PluginTreeSections } from '../plugins/ExtensionPoint'
+import { t } from '../i18n/translations'
 import {
   Star,
   HardDrive,
@@ -32,6 +33,7 @@ const iconMap: Record<string, React.ReactNode> = {
 }
 
 export default function Sidebar() {
+  const _lang = useStore((s) => s.ui.language)
   const sidebarWidth = useStore((s) => s.sidebarWidth)
   const setSidebarWidth = useStore((s) => s.setSidebarWidth)
   const setSidebarOpen = useStore((s) => s.setSidebarOpen)
@@ -122,12 +124,12 @@ export default function Sidebar() {
   }, [])
 
   const favoriteItems = [
-    { id: 'desktop', label: 'Desktop', icon: 'Monitor', key: 'desktop' },
-    { id: 'downloads', label: 'Downloads', icon: 'Download', key: 'downloads' },
-    { id: 'documents', label: 'Documents', icon: 'FileText', key: 'documents' },
-    { id: 'pictures', label: 'Pictures', icon: 'Image', key: 'pictures' },
-    { id: 'videos', label: 'Videos', icon: 'Video', key: 'videos' },
-    { id: 'music', label: 'Music', icon: 'Music', key: 'music' },
+    { id: 'desktop', labelKey: 'desktop', icon: 'Monitor', key: 'desktop' },
+    { id: 'downloads', labelKey: 'downloads', icon: 'Download', key: 'downloads' },
+    { id: 'documents', labelKey: 'documents', icon: 'FileText', key: 'documents' },
+    { id: 'pictures', labelKey: 'pictures', icon: 'Image', key: 'pictures' },
+    { id: 'videos', labelKey: 'videos', icon: 'Video', key: 'videos' },
+    { id: 'music', labelKey: 'music', icon: 'Music', key: 'music' },
   ]
 
   const handleNavigate = (path: string | undefined) => {
@@ -187,7 +189,7 @@ export default function Sidebar() {
             letterSpacing: '0.3px',
           }}
         >
-          Explorer
+          {t('explorer')}
         </span>
         <button
           onClick={() => setSidebarOpen(false)}
@@ -211,7 +213,7 @@ export default function Sidebar() {
       <div style={{ flex: 1, overflow: 'auto', padding: '6px 8px' }}>
         {/* Favorites */}
         <SidebarSection
-          label="Favorites"
+          label={t('favorites')}
           icon={<Star size={12} />}
           collapsed={collapsed.favorites}
           onToggle={() => toggleSection('favorites')}
@@ -220,7 +222,7 @@ export default function Sidebar() {
             <SidebarItem
               key={item.id}
               icon={iconMap[item.icon]}
-              label={item.label}
+              label={t(item.labelKey)}
               onClick={() => handleNavigate(initialDirs[item.key])}
               active={activePath === initialDirs[item.key]}
             />
@@ -238,7 +240,7 @@ export default function Sidebar() {
 
         {/* Drives */}
         <SidebarSection
-          label="Drives"
+          label={t('drives')}
           icon={<HardDrive size={12} />}
           collapsed={collapsed.drives}
           onToggle={() => toggleSection('drives')}
@@ -256,14 +258,14 @@ export default function Sidebar() {
 
         {/* Recent */}
         <SidebarSection
-          label="Recent"
+          label={t('recent')}
           icon={<History size={12} />}
           collapsed={collapsed.recent}
           onToggle={() => toggleSection('recent')}
         >
           {recentFiles.length === 0 ? (
             <div style={{ padding: '8px 12px', fontSize: 12, color: 'var(--text-muted)' }}>
-              No recent items
+              {t('noRecent')}
             </div>
           ) : (
             <div>
@@ -282,14 +284,14 @@ export default function Sidebar() {
 
         {/* Tags */}
         <SidebarSection
-          label="Tags"
+          label={t('tags')}
           icon={<Tag size={12} />}
           collapsed={collapsed.tags}
           onToggle={() => toggleSection('tags')}
         >
           {allTags.length === 0 ? (
             <div style={{ padding: '8px 12px', fontSize: 12, color: 'var(--text-muted)' }}>
-              No tags yet
+              {t('noTags')}
             </div>
           ) : (
             <div style={{ padding: '4px 0' }}>
@@ -312,7 +314,7 @@ export default function Sidebar() {
                   onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
                 >
                   <X size={12} />
-                  Clear filter
+                  {t('clearFilter')}
                 </button>
               )}
               {allTags.map((tag) => (

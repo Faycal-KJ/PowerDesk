@@ -5,24 +5,25 @@ import { Search, Folder, File, X, Command, ArrowUpDown, Settings, Sidebar, Colum
 import { parseSearchQuery } from '../lib/searchParser'
 import type { SearchFilters } from '../types'
 import { pluginManager } from '../plugins/pluginManager'
+import { t } from '../i18n/translations'
 
 const COMMANDS = [
-  { id: 'toggle-sidebar', label: 'Toggle Sidebar', keys: 'Ctrl+B', icon: 'Sidebar', action: 'toggleSidebar' },
-  { id: 'toggle-dualpane', label: 'Toggle Dual Pane', keys: 'Ctrl+Shift+\\', icon: 'Columns', action: 'toggleDualPane' },
-  { id: 'grid-view', label: 'Grid View', keys: '', icon: 'LayoutGrid', action: 'setViewMode:grid' },
-  { id: 'list-view', label: 'List View', keys: '', icon: 'List', action: 'setViewMode:list' },
-  { id: 'gallery-view', label: 'Gallery View', keys: '', icon: 'Image', action: 'setViewMode:gallery' },
-  { id: 'back', label: 'Go Back', keys: 'Alt+Left', icon: 'ArrowUpDown', action: 'navigateBack' },
-  { id: 'forward', label: 'Go Forward', keys: 'Alt+Right', icon: 'ArrowUpDown', action: 'navigateForward' },
-  { id: 'refresh', label: 'Refresh', keys: 'F5', icon: 'ArrowUpDown', action: 'refresh' },
-  { id: 'new-tab', label: 'New Tab', keys: 'Ctrl+T', icon: 'File', action: 'newTab' },
-  { id: 'close-tab', label: 'Close Current Tab', keys: 'Ctrl+W', icon: 'X', action: 'closeTab' },
-  { id: 'previous-tab', label: 'Previous Tab', keys: 'Ctrl+Shift+Tab', icon: 'ArrowUpDown', action: 'prevTab' },
-  { id: 'next-tab', label: 'Next Tab', keys: 'Ctrl+Tab', icon: 'ArrowUpDown', action: 'nextTab' },
-  { id: 'qr-generator', label: 'QR Generator', keys: '', icon: 'QrCode', action: 'openTool:qr' },
-  { id: 'terminal', label: 'Terminal', keys: '', icon: 'Terminal', action: 'openTool:terminal' },
-  { id: 'color-tool', label: 'Color Tool', keys: '', icon: 'Palette', action: 'openTool:color' },
-  { id: 'settings', label: 'Settings', keys: '', icon: 'Settings', action: 'openSettings' },
+  { id: 'toggle-sidebar', labelKey: 'cmdToggleSidebar', keys: 'Ctrl+B', icon: 'Sidebar', action: 'toggleSidebar' },
+  { id: 'toggle-dualpane', labelKey: 'cmdToggleDualPane', keys: 'Ctrl+Shift+\\', icon: 'Columns', action: 'toggleDualPane' },
+  { id: 'grid-view', labelKey: 'cmdGridView', keys: '', icon: 'LayoutGrid', action: 'setViewMode:grid' },
+  { id: 'list-view', labelKey: 'cmdListView', keys: '', icon: 'List', action: 'setViewMode:list' },
+  { id: 'gallery-view', labelKey: 'cmdGalleryView', keys: '', icon: 'Image', action: 'setViewMode:gallery' },
+  { id: 'back', labelKey: 'cmdGoBack', keys: 'Alt+Left', icon: 'ArrowUpDown', action: 'navigateBack' },
+  { id: 'forward', labelKey: 'cmdGoForward', keys: 'Alt+Right', icon: 'ArrowUpDown', action: 'navigateForward' },
+  { id: 'refresh', labelKey: 'cmdRefresh', keys: 'F5', icon: 'ArrowUpDown', action: 'refresh' },
+  { id: 'new-tab', labelKey: 'cmdNewTab', keys: 'Ctrl+T', icon: 'File', action: 'newTab' },
+  { id: 'close-tab', labelKey: 'cmdCloseTab', keys: 'Ctrl+W', icon: 'X', action: 'closeTab' },
+  { id: 'previous-tab', labelKey: 'cmdPreviousTab', keys: 'Ctrl+Shift+Tab', icon: 'ArrowUpDown', action: 'prevTab' },
+  { id: 'next-tab', labelKey: 'cmdNextTab', keys: 'Ctrl+Tab', icon: 'ArrowUpDown', action: 'nextTab' },
+  { id: 'qr-generator', labelKey: 'cmdQRGenerator', keys: '', icon: 'QrCode', action: 'openTool:qr' },
+  { id: 'terminal', labelKey: 'cmdTerminal', keys: '', icon: 'Terminal', action: 'openTool:terminal' },
+  { id: 'color-tool', labelKey: 'cmdColorTool', keys: '', icon: 'Palette', action: 'openTool:color' },
+  { id: 'settings', labelKey: 'cmdSettings', keys: '', icon: 'Settings', action: 'openSettings' },
 ]
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -41,6 +42,7 @@ const iconMap: Record<string, React.ReactNode> = {
 }
 
 export default function SearchOverlay({ onClose, mode = 'search' }: { onClose: () => void; mode?: 'search' | 'command' }) {
+  const _lang = useStore((s) => s.ui.language)
   const [query, setQuery] = useState('')
   const [filteredCommands, setFilteredCommands] = useState(COMMANDS)
   const [searching, setSearching] = useState(false)
@@ -112,6 +114,7 @@ export default function SearchOverlay({ onClose, mode = 'search' }: { onClose: (
     const pluginCmds = pluginManager.getCommands().map((c) => ({
       id: c.id,
       label: c.label,
+      labelKey: null,
       keys: c.shortcut || '',
       icon: 'Settings',
       action: `plugin:${c.pluginId}:${c.id}`,
@@ -119,7 +122,7 @@ export default function SearchOverlay({ onClose, mode = 'search' }: { onClose: (
     }))
     const all = [...COMMANDS, ...pluginCmds]
     setFilteredCommands(
-      q ? all.filter((c) => c.label.toLowerCase().includes(q) || c.id.includes(q)) : all
+      q ? all.filter((c) => (c.labelKey ? t(c.labelKey) : (c as any).label || '').toLowerCase().includes(q) || c.id.includes(q)) : all
     )
   }, [query, isCommandMode])
 
@@ -615,19 +618,19 @@ export default function SearchOverlay({ onClose, mode = 'search' }: { onClose: (
         <div style={{ maxHeight: 400, overflow: 'auto' }}>
           {isCommandMode ? (
             <>
-              {searching && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12.5 }}>Searching...</div>}
+              {searching && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12.5 }}>{t('searching')}</div>}
               {filteredCommands.map((cmd, i) => (
                 <div key={cmd.id} onClick={() => executeCommand(cmd)} onMouseEnter={() => setSelectedIdx(i)}
                   style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 16px', cursor: 'pointer', background: i === selectedIdx ? 'var(--bg-hover)' : 'transparent', animation: 'search-fade 150ms ease', animationDelay: `${Math.min(i * 15, 150)}ms`, animationFillMode: 'both' }}>
                   <div style={{ flexShrink: 0, color: 'var(--text-muted)' }}>{iconMap[cmd.icon] || <File size={14} />}</div>
-                  <span style={{ flex: 1, fontSize: 13, fontWeight: 400, color: 'var(--text-primary)' }}>{cmd.label}</span>
+                  <span style={{ flex: 1, fontSize: 13, fontWeight: 400, color: 'var(--text-primary)' }}>{cmd.labelKey ? t(cmd.labelKey) : (cmd as any).label}</span>
                   {cmd.keys && <span style={{ fontSize: 10.5, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', letterSpacing: '0.3px' }}>{cmd.keys}</span>}
                 </div>
               ))}
             </>
           ) : (
             <>
-              {searching && results.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12.5 }}>Searching...</div>}
+              {searching && results.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12.5 }}>{t('searching')}</div>}
               {!searching && query && results.length === 0 && <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12.5 }}>No results for "{query}"</div>}
               {results.map((item, i) => (
                 <div key={item.path} onClick={() => openResult(item)} onMouseEnter={() => setSelectedIdx(i)}
