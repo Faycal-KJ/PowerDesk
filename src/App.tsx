@@ -43,6 +43,8 @@ export default function App() {
   const focusedPane = useStore((s) => s.focusedPane)
   const setFocusedPane = useStore((s) => s.setFocusedPane)
   const navigateTo = useStore((s) => s.navigateTo)
+  const navigateBack = useStore((s) => s.navigateBack)
+  const navigateForward = useStore((s) => s.navigateForward)
   const setInitialDirs = useStore((s) => s.setInitialDirs)
   const appendWorkspaceTabs = useStore((s) => s.appendWorkspaceTabs)
   const persistWorkspace = useStore((s) => s.persistWorkspace)
@@ -128,6 +130,22 @@ export default function App() {
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [handleKeyDown])
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (e.button === 3) {
+        e.preventDefault()
+        if (activeTab?.dualPane && focusedPane === 'right' && activeTab.dualPaneTabId) navigateBack(activeTab.dualPaneTabId)
+        else if (activeTabId) navigateBack(activeTabId)
+      } else if (e.button === 4) {
+        e.preventDefault()
+        if (activeTab?.dualPane && focusedPane === 'right' && activeTab.dualPaneTabId) navigateForward(activeTab.dualPaneTabId)
+        else if (activeTabId) navigateForward(activeTabId)
+      }
+    }
+    document.addEventListener('mouseup', handler)
+    return () => document.removeEventListener('mouseup', handler)
+  }, [activeTabId, activeTab, focusedPane, navigateBack, navigateForward])
 
   useEffect(() => {
     const api = getApi()
