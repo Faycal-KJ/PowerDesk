@@ -18,6 +18,7 @@ export default function FileArea({ pane, tabId }: { pane?: 'left' | 'right' | 's
   const setContextTarget = useStore((s) => s.setContextTarget)
   const searchQuery = useStore((s) => s.searchQuery)
   const iconSize = useStore((s) => s.iconSize)
+  const gridItemSize = useStore((s) => s.ui.gridItemSize)
   const showThumbnails = useStore((s) => s.showThumbnails)
   const activeTagFilter = useStore((s) => s.activeTagFilter)
   const folderSizes = useStore((s) => s.folderSizes)
@@ -48,6 +49,8 @@ export default function FileArea({ pane, tabId }: { pane?: 'left' | 'right' | 's
   const pasteClipboard = useStore((s) => s.pasteClipboard)
   const sortBy = useStore((s) => s.sortBy)
   const sortDirection = useStore((s) => s.sortDirection)
+  const setIconSize = useStore((s) => s.setIconSize)
+  const setUi = useStore((s) => s.setUi)
 
   const [dragOverPath, setDragOverPath] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -322,6 +325,14 @@ export default function FileArea({ pane, tabId }: { pane?: 'left' | 'right' | 's
     } catch {}
   }, [refresh])
 
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    if (!e.ctrlKey) return
+    e.preventDefault()
+    const delta = e.deltaY > 0 ? -4 : 4
+    setIconSize(iconSize + delta)
+    setUi({ gridItemSize: Math.max(16, Math.min(96, gridItemSize + delta)) })
+  }, [iconSize, gridItemSize, setIconSize, setUi])
+
   if (isLoading) {
     return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>Loading...</div>
   }
@@ -361,7 +372,10 @@ export default function FileArea({ pane, tabId }: { pane?: 'left' | 'right' | 's
 
   const animStyle: React.CSSProperties = { animation: 'file-enter 200ms ease', display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }
 
-  if (viewMode === 'grid') return <div key={tab?.path} style={animStyle}><GridView {...sharedProps} /></div>
-  if (viewMode === 'gallery') return <div key={tab?.path} style={animStyle}><GalleryView {...sharedProps} /></div>
-  return <div key={tab?.path} style={animStyle}><ListView {...sharedProps} /></div>
+  const view =
+    viewMode === 'grid' ? <GridView {...sharedProps} /> :
+    viewMode === 'gallery' ? <GalleryView {...sharedProps} /> :
+    <ListView {...sharedProps} />
+
+  return <div key={tab?.path} style={animStyle} onWheel={handleWheel}>{view}</div>
 }
