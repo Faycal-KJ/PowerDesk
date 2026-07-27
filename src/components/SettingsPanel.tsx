@@ -179,17 +179,20 @@ export default function SettingsPanel() {
             <>
               <Section icon={<Palette size={14} />} title="Quick Themes">
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-                  {PRESET_THEMES.map((t) => (
-                    <button key={t.name} onClick={() => setUi({ accentColor: t.accent, bgPrimary: t.bg, bgSecondary: t.bg2, bgTertiary: t.bg3, textColor: t.text, textSecondary: t.text2, sidebarBg: t.sidebar })}
-                      style={{ padding: '8px 6px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', cursor: 'pointer', textAlign: 'center' }}>
-                      <div style={{ display: 'flex', gap: 3, justifyContent: 'center', marginBottom: 4 }}>
-                        <div style={{ width: 14, height: 14, borderRadius: '50%', background: t.accent }} />
-                        <div style={{ width: 14, height: 14, borderRadius: '50%', background: t.bg3 }} />
-                        <div style={{ width: 14, height: 14, borderRadius: '50%', background: t.text }} />
-                      </div>
-                      <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>{t.name}</span>
-                    </button>
-                  ))}
+                  {PRESET_THEMES.map((t) => {
+                    const isActive = ui.accentColor === t.accent && ui.bgPrimary === t.bg && ui.bgSecondary === t.bg2 && ui.bgTertiary === t.bg3 && ui.textColor === t.text && ui.textSecondary === t.text2 && ui.sidebarBg === t.sidebar
+                    return (
+                      <button key={t.name} onClick={() => setUi({ accentColor: t.accent, bgPrimary: t.bg, bgSecondary: t.bg2, bgTertiary: t.bg3, textColor: t.text, textSecondary: t.text2, sidebarBg: t.sidebar })}
+                        style={{ padding: '8px 6px', borderRadius: 'var(--radius-sm)', border: isActive ? '2px solid var(--accent)' : '1px solid var(--border-color)', outline: isActive ? '1px solid var(--accent)' : 'none', outlineOffset: '-3px', cursor: 'pointer', textAlign: 'center' }}>
+                        <div style={{ display: 'flex', gap: 3, justifyContent: 'center', marginBottom: 4 }}>
+                          <div style={{ width: 14, height: 14, borderRadius: '50%', background: t.accent }} />
+                          <div style={{ width: 14, height: 14, borderRadius: '50%', background: t.bg3 }} />
+                          <div style={{ width: 14, height: 14, borderRadius: '50%', background: t.text }} />
+                        </div>
+                        <span style={{ fontSize: 10, color: isActive ? 'var(--accent)' : 'var(--text-secondary)' }}>{t.name}</span>
+                      </button>
+                    )
+                  })}
                 </div>
               </Section>
 
