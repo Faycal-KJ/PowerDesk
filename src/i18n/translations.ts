@@ -169,6 +169,7 @@ const translations: Record<Language, Record<string, string>> = {
     language: `Language`,
     theOS: `The Operating System`,
     builtWith: `Built with`,
+
   },
   fr: {
     settings: `Éparamètres`,

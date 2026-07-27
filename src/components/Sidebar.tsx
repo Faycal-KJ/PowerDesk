@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useStore } from '../stores/useStore'
 import { getApi } from '../lib/api'
 import { PluginTreeSections } from '../plugins/ExtensionPoint'
@@ -53,9 +53,19 @@ export default function Sidebar() {
   const activePath = activeTab?.path || ''
   const recentLimit = useStore((s) => s.settings.recentLimit)
   const subtleGradients = useStore((s) => s.ui?.subtleGradients)
-  const sidebarBg = useStore((s) => s.ui?.sidebarBg)
   const bgSecondary = useStore((s) => s.ui?.bgSecondary)
   const accentColor = useStore((s) => s.ui?.accentColor)
+
+  const favorites = useStore((s) => s.favorites)
+  const removeFavorite = useStore((s) => s.removeFavorite)
+
+  const clipboardItems = useStore((s) => s.clipboardItems)
+  const clipboardOp = useStore((s) => s.clipboardOp)
+  const setClipboard = useStore((s) => s.setClipboard)
+  const refresh = useStore((s) => s.refresh)
+
+  const [folderDropTarget, setFolderDropTarget] = useState<string | null>(null)
+  const [contextMenu, setContextMenu] = useState<{ path: string; name: string; x: number; y: number } | null>(null)
 
   const sidebarGradientStart = (() => {
     if (!bgSecondary || !accentColor) return '#222222'
@@ -99,23 +109,6 @@ export default function Sidebar() {
   const activeTagFilter = useStore((s) => s.activeTagFilter)
   const setActiveTagFilter = useStore((s) => s.setActiveTagFilter)
 
-  const [userFavorites, setUserFavorites] = useState<Array<{ name: string; path: string }>>([])
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem('pdx_favorites')
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        const items = Array.isArray(parsed)
-          ? parsed.map((item: any) => typeof item === 'string'
-            ? { name: item.split('\\').pop() || item, path: item }
-            : { name: item.name || item.path.split('\\').pop() || item.path, path: item.path })
-          : []
-        setUserFavorites(items)
-      }
-    } catch {}
-  }, [])
-
   useEffect(() => {
     const api = getApi()
     if (api?.getDrivesWindows) {
@@ -153,6 +146,72 @@ export default function Sidebar() {
 
   const toggleSection = (id: string) =>
     setCollapsed((s) => ({ ...s, [id]: !(s as any)[id] }))
+
+  const handleFavContextMenu = useCallback((e: React.MouseEvent, path: string, name: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setContextMenu({ path, name, x: e.clientX, y: e.clientY })
+  }, [])
+
+  const closeContextMenu = useCallback(() => setContextMenu(null), [])
+
+  useEffect(() => {
+    if (contextMenu) {
+      const handler = () => closeContextMenu()
+      window.addEventListener('click', handler)
+      window.addEventListener('contextmenu', handler)
+      return () => {
+        window.removeEventListener('click', handler)
+        window.removeEventListener('contextmenu', handler)
+      }
+    }
+  }, [contextMenu, closeContextMenu])
+
+  const handleFolderDragOver = useCallback((e: React.DragEvent, drivePath: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    e.dataTransfer.dropEffect = e.ctrlKey ? 'copy' : 'move'
+    setFolderDropTarget(drivePath)
+  }, [])
+
+  const handleFolderDragLeave = useCallback(() => {
+    setFolderDropTarget(null)
+  }, [])
+
+  const extractDropPaths = useCallback((e: React.DragEvent): string[] => {
+    const dt = (e as any).nativeEvent?.dataTransfer || e.dataTransfer
+    if (!dt) return []
+    try {
+      const json = dt.getData('application/json')
+      if (json) {
+        const data = JSON.parse(json)
+        if (data?.paths && Array.isArray(data.paths)) return data.paths
+      }
+    } catch {}
+    try {
+      const text = dt.getData('text/plain')
+      if (text && (text.includes('\\') || text.includes('/'))) return [text]
+    } catch {}
+    return []
+  }, [])
+
+  const handleFolderDrop = useCallback(async (folderPath: string, e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setFolderDropTarget(null)
+    const paths = extractDropPaths(e)
+    if (paths.length > 0) {
+      const api = getApi()
+      if (!api) return
+      for (const src of paths) {
+        const baseName = src.split('\\').pop() || src.split('/').pop() || ''
+        const dest = folderPath + '\\' + baseName
+        if (e.ctrlKey) await api.fileCopy(src, dest)
+        else await api.fileRename(src, dest)
+      }
+      refresh()
+    }
+  }, [extractDropPaths, refresh])
 
   return (
     <div
@@ -227,13 +286,15 @@ export default function Sidebar() {
               active={activePath === initialDirs[item.key]}
             />
           ))}
-          {userFavorites.length > 0 && <div style={{ height: 1, background: 'var(--border-subtle)', margin: '4px 8px', opacity: 0.5 }} />}
-          {userFavorites.map((fav) => (
+          {favorites.length > 0 && <div style={{ height: 1, background: 'var(--border-subtle)', margin: '4px 8px', opacity: 0.5 }} />}
+          {favorites.map((fav) => (
             <SidebarItem
               key={fav.path}
               icon={<Star size={13} style={{ color: 'var(--accent)' }} />}
               label={fav.name}
               onClick={() => handleNavigate(fav.path)}
+              active={activePath === fav.path}
+              onContextMenu={(e) => handleFavContextMenu(e, fav.path, fav.name)}
             />
           ))}
         </SidebarSection>
@@ -252,6 +313,10 @@ export default function Sidebar() {
               label={drive}
               onClick={() => handleNavigate(drive)}
               active={activePath === drive}
+              onDragOver={(e) => handleFolderDragOver(e, drive)}
+              onDragLeave={handleFolderDragLeave}
+              onDrop={(e) => handleFolderDrop(drive, e)}
+              dropHighlight={folderDropTarget === drive}
             />
           ))}
         </SidebarSection>
@@ -368,6 +433,73 @@ export default function Sidebar() {
         onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--accent)')}
         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
       />
+
+      {/* Context menu for favorites */}
+      {contextMenu && (
+        <div
+          style={{
+            position: 'fixed',
+            left: contextMenu.x,
+            top: contextMenu.y,
+            zIndex: 9999,
+            background: 'var(--bg-primary)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-sm)',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
+            padding: '4px 0',
+            minWidth: 180,
+          }}
+        >
+          <button
+            onClick={() => {
+              handleNavigate(contextMenu.path)
+              closeContextMenu()
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              width: '100%',
+              padding: '6px 12px',
+              fontSize: 12,
+              color: 'var(--text-primary)',
+              background: 'transparent',
+              textAlign: 'left',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+          >
+            <Folder size={13} />
+            {t('open')}
+          </button>
+          <button
+            onClick={() => {
+              removeFavorite(contextMenu.path)
+              closeContextMenu()
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              width: '100%',
+              padding: '6px 12px',
+              fontSize: 12,
+              color: 'var(--danger)',
+              background: 'transparent',
+              textAlign: 'left',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+          >
+            <X size={13} />
+            {t('removeFavorite')}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -448,15 +580,29 @@ function SidebarItem({
   label,
   onClick,
   active,
+  onContextMenu,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  dropHighlight,
 }: {
   icon: React.ReactNode
   label: string
   onClick: () => void
   active?: boolean
+  onContextMenu?: (e: React.MouseEvent) => void
+  onDragOver?: (e: React.DragEvent) => void
+  onDragLeave?: (e: React.DragEvent) => void
+  onDrop?: (e: React.DragEvent) => void
+  dropHighlight?: boolean
 }) {
   return (
     <button
       onClick={onClick}
+      onContextMenu={onContextMenu}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -466,15 +612,15 @@ function SidebarItem({
         color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
         fontSize: 12.5,
         fontWeight: active ? 500 : 400,
-        background: active ? 'var(--accent-bg)' : 'transparent',
-        borderLeft: active ? '2px solid var(--accent)' : '2px solid transparent',
+        background: dropHighlight ? 'rgba(99,102,241,0.15)' : active ? 'var(--accent-bg)' : 'transparent',
+        borderLeft: active ? '2px solid var(--accent)' : dropHighlight ? '2px solid var(--accent)' : '2px solid transparent',
         textAlign: 'left',
         borderRadius: 'var(--radius-sm)',
         transition: 'all 120ms ease',
         letterSpacing: '0.1px',
       }}
-      onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'var(--bg-hover)' }}
-      onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = active ? 'var(--accent-bg)' : 'transparent' }}
+      onMouseEnter={(e) => { if (!active && !dropHighlight) e.currentTarget.style.background = 'var(--bg-hover)' }}
+      onMouseLeave={(e) => { if (!active && !dropHighlight) e.currentTarget.style.background = 'transparent' }}
     >
       {icon}
       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

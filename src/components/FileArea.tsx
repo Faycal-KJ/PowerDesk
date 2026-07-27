@@ -328,7 +328,13 @@ export default function FileArea({ pane, tabId }: { pane?: 'left' | 'right' | 's
 
   if (filtered.length === 0) {
     return (
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', gap: 8 }}>
+      <div
+        onContextMenu={(e) => {
+          e.preventDefault()
+          setBgContextMenu({ x: e.clientX, y: e.clientY })
+        }}
+        style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', gap: 8 }}
+      >
         <Folder size={48} style={{ opacity: 0.3 }} />
         <span>{searchQuery ? 'No results found' : 'This folder is empty'}</span>
         {!tab?.path && <span style={{ fontSize: 12 }}>Select a folder from the sidebar to get started</span>}

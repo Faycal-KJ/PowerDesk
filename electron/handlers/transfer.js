@@ -19,6 +19,45 @@ function getAllFiles(dirPath) {
   return files
 }
 
+function removeEmptyDirsUpTo(dir, stopAt) {
+  const norm = (p) => {
+    try { return path.resolve(p).replace(/[/\\]+$/, '').toLowerCase() } catch { return p.toLowerCase() }
+  }
+  const normStop = norm(stopAt)
+
+  function cleanRecursive(d) {
+    try {
+      const entries = fs.readdirSync(d, { withFileTypes: true })
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          cleanRecursive(path.join(d, entry.name))
+        }
+      }
+      const remaining = fs.readdirSync(d)
+      if (remaining.length === 0 && norm(d) !== normStop) {
+        fs.rmdirSync(d)
+      }
+    } catch {}
+  }
+
+  cleanRecursive(dir)
+
+  let current = dir
+  while (current && norm(current) !== normStop && norm(current).length >= normStop.length) {
+    try {
+      const entries = fs.readdirSync(current)
+      if (entries.length === 0) {
+        fs.rmdirSync(current)
+        current = path.dirname(current)
+      } else {
+        break
+      }
+    } catch {
+      break
+    }
+  }
+}
+
 function getDirSize(dirPath) {
   let total = 0
   try {
@@ -135,6 +174,9 @@ async function processTransfer(id, getMainWindow) {
 
   t.status = 'completed'
   t.speed = calcSpeed(t)
+  if (t.operation === 'move' && t.errors.length === 0) {
+    removeEmptyDirsUpTo(t.type === 'directory' ? t.src : path.dirname(t.src), path.dirname(t.dest))
+  }
   sendTransferProgress(id, getMainWindow)
 }
 

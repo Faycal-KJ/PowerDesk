@@ -23,6 +23,9 @@ export const createTransfersSlice = (set: SetState, get: GetState): TransfersSli
     if (idx >= 0) {
       const next = [...s.transfers]
       next[idx] = data
+      if (data.status === 'completed' || data.status === 'error') {
+        setTimeout(() => get().refresh(), 100)
+      }
       return { transfers: next }
     }
     return { transfers: [...s.transfers, data] }
