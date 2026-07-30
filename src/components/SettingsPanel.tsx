@@ -370,6 +370,11 @@ export default function SettingsPanel() {
                 <Row label="Subtle Gradients">
                   <Toggle checked={ui.subtleGradients} onChange={(v) => setUi({ subtleGradients: v })} />
                 </Row>
+                <Row label={`Gradient Spread: ${ui.sidebarGradientStrength}%`}>
+                  <input type="range" min={0} max={100} value={ui.sidebarGradientStrength}
+                    onChange={(e) => setUi({ sidebarGradientStrength: Number(e.target.value) })}
+                    style={{ width: 120, accentColor: 'var(--accent)' }} />
+                </Row>
                 <Row label="Hover Glow">
                   <Toggle checked={ui.hoverGlow} onChange={(v) => setUi({ hoverGlow: v })} />
                 </Row>

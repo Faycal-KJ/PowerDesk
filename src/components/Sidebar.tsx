@@ -53,6 +53,7 @@ export default function Sidebar() {
   const activePath = activeTab?.path || ''
   const recentLimit = useStore((s) => s.settings.recentLimit)
   const subtleGradients = useStore((s) => s.ui?.subtleGradients)
+  const gradientStrength = useStore((s) => s.ui?.sidebarGradientStrength ?? 40)
   const bgSecondary = useStore((s) => s.ui?.bgSecondary)
   const accentColor = useStore((s) => s.ui?.accentColor)
 
@@ -221,7 +222,7 @@ export default function Sidebar() {
         width: sidebarWidth,
         minWidth: 160,
         height: '100%',
-        background: subtleGradients ? `linear-gradient(90deg, ${sidebarGradientStart} 0%, ${sidebarGradientEnd} 40%)` : 'var(--bg-sidebar)',
+        background: subtleGradients ? `linear-gradient(90deg, ${sidebarGradientStart} 0%, ${sidebarGradientEnd} ${Math.max(0, Math.min(100, gradientStrength))}%)` : 'var(--bg-sidebar)',
         boxShadow: '1px 0 6px rgba(0,0,0,0.1), 4px 0 20px rgba(0,0,0,0.06)',
         display: 'flex',
         flexDirection: 'column',

@@ -74,6 +74,7 @@ export interface WorkspaceProfile {
     fontWeight: number
     glassPanels: boolean
     subtleGradients: boolean
+    sidebarGradientStrength: number
     hoverGlow: boolean
   }
   settings: {

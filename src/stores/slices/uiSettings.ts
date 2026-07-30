@@ -23,6 +23,7 @@ export type UiSettings = {
   fontWeight: number
   glassPanels: boolean
   subtleGradients: boolean
+  sidebarGradientStrength: number
   hoverGlow: boolean
   accentPalette: string[]
   gridItemSize: number
@@ -42,7 +43,7 @@ export const DEFAULT_UI: UiSettings = {
   borderStyle: 'solid', borderColor: '#383838', fontSize: 13, fontFamily: '',
   blurBackground: false, animations: true,
   successColor: '#2ecc71', warningColor: '#f39c12', dangerColor: '#e74c3c',
-  fontWeight: 400, glassPanels: false, subtleGradients: true, hoverGlow: false,
+  fontWeight: 400, glassPanels: false, subtleGradients: true, sidebarGradientStrength: 40, hoverGlow: false,
   accentPalette: ['#7c5cfc', '#3b82f6', '#22c55e', '#f97316', '#f43f5e', '#06b6d4', '#eab308', '#8b5cf6'],
   gridItemSize: 32, listDensity: 'comfortable', animationSpeed: 'normal',
   sidebarDefaultWidth: 220, tabStyle: 'underline', showFavoriteBar: true, showStatusBar: true,
@@ -127,7 +128,9 @@ export function applyUiSettings(ui?: UiSettings) {
   r.style.setProperty('--accent-hover', darkenColor(u.accentColor, 15))
   r.style.setProperty('--accent-bg', u.accentColor + '1a')
   r.style.setProperty('--accent-gradient', `linear-gradient(135deg, ${u.accentColor}, ${darkenColor(u.accentColor, 15)})`)
-  r.style.setProperty('--surface-gradient', `linear-gradient(180deg, ${blendColors(lightenColor(u.bgSecondary, 6), u.accentColor, 0.12)}, ${u.bgPrimary})`)
+  const spread = Math.max(0, Math.min(100, u.sidebarGradientStrength ?? 40))
+  r.style.setProperty('--surface-gradient', `linear-gradient(180deg, ${blendColors(lightenColor(u.bgSecondary, 6), u.accentColor, 0.12)} 0%, ${u.bgPrimary} ${spread}%)`)
+  r.style.setProperty('--gradient-spread', spread + '%')
   r.style.setProperty('--success', u.successColor)
   r.style.setProperty('--warning', u.warningColor)
   r.style.setProperty('--danger', u.dangerColor)
