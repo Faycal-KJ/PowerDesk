@@ -96,6 +96,16 @@ PowerDesk uses a custom Go binary indexer that scans your entire filesystem in p
 
 ## Getting Started
 
+### Support the Project
+
+If PowerDesk is useful to you, consider buying me a coffee — it keeps the project alive:
+
+<p align="center">
+  <a href="https://ko-fi.com/faycal_kdj">
+    <img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Buy Me a Coffee at ko-fi.com" width="250">
+  </a>
+</p>
+
 ### Prerequisites
 
 - Node.js 18+
